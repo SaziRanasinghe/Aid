@@ -1,0 +1,17 @@
+{
+    "name": "my-fullstack-app",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "start": "concurrently \"npm run server\" \"npm run client\"",
+        "server": "cd server && node server.js",
+        "client": "cd client && npm start"
+    },
+    "dependencies": {
+        "@material-ui/core": "^4.12.4"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
