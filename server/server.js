@@ -1,39 +1,31 @@
 const express = require('express');
-const cors = require('cors');
-const app = express();
-const mysqlConnection = require('./aid_nexus.js'); // Ensure this path is correct
+const { createPostEndpoint, createGetEndpoint } = require('./aid_nexus'); // Adjust the path as needed
 
-app.use(cors());
+const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 5000;
+// POST endpoint for adding an event
+createPostEndpoint(
+    app,
+    '/api/events',
+    'INSERT INTO event (event_name, event_description, event_datetime, is_event_active) VALUES (?, ?, ?, ?)',
+    ['event_name', 'event_description', 'event_datetime', 'active']
+);
 
-app.get('/api/user', (req, res) => {
-  const sql = 'SELECT * FROM user'; // Modify this query as per your table structure
-  mysqlConnection.query(sql, (err, results) => {
-    if (err) {
-      console.error('Error fetching data:', err);
-      res.status(500).json({ error: 'Error fetching data' });
-      return;
-    }
-    res.json(results);
-  });
-});
+// GET endpoint for retrieving events
+createGetEndpoint(
+    app,
+    '/api/events',
+    'SELECT * FROM event'
+);
 
-app.post('/api/events', (req, res) => {
-  const { event_name,event_description, event_datetime, is_event_active } = req.body;
+// GET endpoint for retrieving a specific event
+createGetEndpoint(
+    app,
+    '/api/events/:id',
+    'SELECT * FROM event WHERE event_id = ?',
+    ['id']
+);
 
-  const query = 'INSERT INTO event (event_name,event_description, event_datetime, is_event_active) VALUES (?, ?, ?, ?)';
-  mysqlConnection.query(query, [ event_name,event_description, event_datetime, is_event_active], (err, result) => {
-    if (err) {
-      console.error('Error inserting event:', err);
-      res.status(500).send('Server error'+err);
-      return;
-    }
-    res.status(200).send('Event added successfully');
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
