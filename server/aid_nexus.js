@@ -15,4 +15,35 @@ aid_nexus.connect((err) => {
   console.log('Connected to the MySQL database.');
 });
 
+// Function for POST requests
+function createPostEndpoints(app,endpoint,sqlQuery,params,successMessage){
+  app.post(endpoint,(req, res) => {
+    const values = params.map(param =>req.body[param]);
+    aid_nexus.query(sqlQuery,values,(err, result) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).send('Server error'+err);
+        return;
+      }
+      res.status(200).send(successMessage);
+    })
+  })
+}
+
+
+// Function for GET requests
+function createGetEndpoints(app,endpoint,sqlQuery,params=[],successMessage){
+  app.get(endpoint,(req, res) => {
+    const values = params.map(param=>req.query[param]);
+    aid_nexus.query(sqlQuery,values,(err, result) => {
+      if (err){
+        console.error('Error executing query:', err);
+        res.status(500).send('Server error'+err);
+        return
+      }
+      res.status(200).json(result);
+    })
+  })
+}
+
 module.exports = aid_nexus;
