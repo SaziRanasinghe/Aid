@@ -21,13 +21,13 @@ app.get('/api/user', (req, res) => {
 });
 
 app.post('/api/events', (req, res) => {
-  const { Eid, fname, description, datetime, active } = req.body;
+  const { event_name,event_description, event_datetime, is_event_active } = req.body;
 
-  const query = 'INSERT INTO events (Eid, fname, description, datetime, active) VALUES (?, ?, ?, ?, ?)';
-  db.query(query, [Eid, fname, description, datetime, active], (err, result) => {
+  const query = 'INSERT INTO event (event_name,event_description, event_datetime, is_event_active) VALUES (?, ?, ?, ?)';
+  mysqlConnection.query(query, [ event_name,event_description, event_datetime, is_event_active], (err, result) => {
     if (err) {
       console.error('Error inserting event:', err);
-      res.status(500).send('Server error');
+      res.status(500).send('Server error'+err);
       return;
     }
     res.status(200).send('Event added successfully');
