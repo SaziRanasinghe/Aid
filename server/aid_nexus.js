@@ -46,4 +46,4 @@ function createGetEndpoints(app,endpoint,sqlQuery,params=[],successMessage){
   })
 }
 
-module.exports = aid_nexus;
+module.exports = {aid_nexus, createPostEndpoints, createGetEndpoints};
