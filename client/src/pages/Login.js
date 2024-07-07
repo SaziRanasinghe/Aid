@@ -1,35 +1,52 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import donate from '../assets/login-image/don.webp';
+import axios from 'axios';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const [values, setValues] = useState({}); // Initialize values state
     
     // Perform login logic here
-    const response = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
+    // const response = await fetch('http://localhost:5000/api/auth/login', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({ email, password })
+    // });
 
-    const data = await response.json();
+    // const data = await response.json();
     
-    if (response.ok) {
-      // On successful login, navigate to the desired route
-      navigate('/donate');
-    } else {
-      // Handle login failure (e.g., display error message)
-      alert(data.msg);
-    }
-  };
+    // if (response.ok) {
+    //   // On successful login, navigate to the desired route
+    //   navigate('/donate');
+    // } else {
+    //   // Handle login failure (e.g., display error message)
+    //   alert(data.msg);
+    // }
+  
 
+  const handleInput = (event) => {
+    setValues(prev => ({ ...prev, [event.target.name]: [event.target.value] }))
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    axios.post('http://localhost:3000/login', values)
+    .then(res => {
+      if(res.data.Login){
+        navigate('/')
+      } else {
+        alert("No record")
+      }
+       console.log (res);
+       
+    })
+    .catch(err => console.log(err));
+  }
   return (
     <div className="relative py-20 2xl:py-10 overflow-hidden">
       <div className="relative container px-4 mx-auto">
@@ -64,7 +81,7 @@ function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="border py-3 px-3 mx-10 my-3 rounded-sm text-black placeholder:text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-700 duration-300"
                   />
-                  <Link to='/donate'>
+                  <Link to='/'>
         <button type="button" class="mx-10 my-5 py-3 px-3 bg-blue-800 text-slate-50 rounded-sm text-sm font-normal hover:bg-blue-600 hover:bg-opacity-90 duration-200">
           Sign in
         </button></Link>

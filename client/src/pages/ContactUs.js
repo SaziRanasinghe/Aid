@@ -1,7 +1,47 @@
-import React from 'react'
+import React, { useState , useEffect } from 'react';
 import Img1 from '../assets/main-images/imge.webp'
 
 function ContactUs() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [subject, setSubject] = useState('');
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  
+  const handleSubjectChange = (e) => {
+    setSubject(e.target.value);
+    setFormData({
+      ...formData,
+      subject: e.target.value,
+    });
+  };
+  
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Extract form data
+    const { name, email, subject, message } = formData;
+
+    // Construct the mailto link with the contact form details
+    const mailtoLink = `mailto:sasini99ranasinghe@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name    : ${name}
+    Email   : ${email}
+    Message : ${message}`)}`;
+
+    // Open the user's default email client
+    window.location.href = mailtoLink;
+  };
+
   return (
    
         <div className="my-6">
@@ -25,9 +65,10 @@ function ContactUs() {
                         <path d="M434.146 59.882H44.912C20.146 59.882 0 80.028 0 104.794v269.47c0 24.766 20.146 44.912 44.912 44.912h389.234c24.766 0 44.912-20.146 44.912-44.912v-269.47c0-24.766-20.146-44.912-44.912-44.912zm0 29.941c2.034 0 3.969.422 5.738 1.159L239.529 264.631 39.173 90.982a14.902 14.902 0 0 1 5.738-1.159zm0 299.411H44.912c-8.26 0-14.971-6.71-14.971-14.971V122.615l199.778 173.141c2.822 2.441 6.316 3.655 9.81 3.655s6.988-1.213 9.81-3.655l199.778-173.141v251.649c-.001 8.26-6.711 14.97-14.971 14.97z" data-original="#000000" />
                       </svg>
                     </div>
-                    <a target="_blank" href="https://veilmail.io/irish-geoff" className="text-[#007bff] text-sm ml-3">
+                    <a target="_blank" href="mailto:sasini99ranasinghe@gmail.com" className="text-[#007bff] text-sm ml-3">
                       <small className="block">Mail</small>
-                      <strong>https://veilmail.io/irish-geoff</strong>
+                      
+                      <strong>sasini99ranasinghe@gmail.com</strong> 
                     </a>
                   </li>
                 </ul>
@@ -60,13 +101,54 @@ function ContactUs() {
               </div>
             </div>
     
-            <form action="https://fabform.io/f/xxxxx" method="post" className="ml-auto space-y-4">
-              <input type="text" name="name" placeholder="Name" className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]" />
-              <input type="email" name="email" placeholder="Email" className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]" />
-              <input type="text" placeholder="Subject" name="subject" className="w-full rounded-md py-2.5 px-4 border text-sm outline-[#007bff]" />
-              <textarea placeholder="Message" rows="6" name="message" className="w-full rounded-md px-4 border text-sm pt-2.5 outline-[#007bff]"></textarea>
-              <button type="submit" className="text-white bg-orange-600 hover:bg-orange-400 font-semibold rounded-md text-sm px-4 py-2.5 w-full">Send</button>
-            </form>
+            <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Name </label>
+          <input
+            className="inputs border-2 border-black"
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+        </div><br/>
+        <div className="form-group">
+          <label>Email </label>
+          <input
+            className="inputs border-2 border-black"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            />
+            </div><br/>
+            <div className="form-group">
+              <label>Subject  </label>
+              <input
+                className="inputs border-2 border-black"
+                type="text"
+                value={subject} 
+                onChange={handleSubjectChange}
+                required
+          />
+        </div><br/>
+        <div className="form-group">
+          <label>Message  </label>
+          <textarea
+          className='border-2 border-black'
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            rows={8}
+          />
+        </div><br/>
+        <button type="submit" className="main-header-navbar__login__register-btn p-4 text-white bg-orange-500 hover:bg-orange-400 font-medium rounded-lg text-m px-8 py-1.5 text-center inline-flex items-center mb-2">
+          Submit
+        </button>
+      </form>
           </div>
         </div>
       
