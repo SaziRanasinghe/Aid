@@ -32,19 +32,8 @@ app.get('/api/user', (req, res) => {
     res.json(results);
   });
 });
-
-// app.post('/signup', (req, res)=> {
-//   const sql = "INSERT INTO users ('username', 'email', 'password') VALUES (?)";
-//   const values =[
-//     req.body.name,
-//     req.body.email,
-//     req.body.password
-//   ]
-//   server.query(sql, [values], (err, result) => {
-//     if(err) return res.json({Message: "Error in node"});
-//     return res.json(result);
-//       })
-// })
+ 
+ 
 
 app.post('/signup', (req, res) => {
   const { name, username, email, password } = req.body;
@@ -76,17 +65,43 @@ app.post('/login', (req, res) => {
   const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
   mysqlConnection.query(sql, [email, password], (err, result) => {
     if (err) {
-      console.error('Error during login:', err);
-      return res.status(500).json({ message: "Error inside server" });
+      console.error('Error inserting event:', err);
+      res.status(500).send('Server error'+err);
+      return;
     }
-    if (result.length > 0) {
-      req.session.username = result[0].username;
-      return res.json({ login: true, username: req.session.username });
-    } else {
-      return res.json({ login: false });
-    }
+    return res.status(200).json({ message: "User registered successfully" });
   });
 });
+
+// app.post('/login', (req,res) => {
+//   const sql = "SELECT * FROM users WHERE email = ? and password = password = ?";
+//   server.query(sql, [req.body.email, req.body.password], (err, result) => {
+//     if(err) return res.json({Message: "Error inside server"});
+//     if(result.length > 0) {
+//       req.session.username = result[0].username;
+//       return res.json({Login: true, username: req.session.username})
+//     }else{
+//     return res.json({Login: false})
+//     }
+//   })
+// })
+
+// app.post('/login', (req, res) => {
+//   const { email, password } = req.body;
+//   const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+//   mysqlConnection.query(sql, [email, password], (err, result) => {
+//     if (err) {
+//       console.error('Error during login:', err);
+//       return res.status(500).json({ message: "Error inside server" });
+//     }
+//     if (result.length > 0) {
+//       req.session.username = result[0].username;
+//       return res.json({ login: true, username: req.session.username });
+//     } else {
+//       return res.json({ login: false });
+//     }
+//   });
+// });
 
 // app.post('/api/events', (req, res) => {
 //   const { Eid, fname, description, datetime, active } = req.body;
