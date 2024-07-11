@@ -62,6 +62,9 @@ function Administrator() {
           </tbody>
         </table>
       </div>
+      <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>
+      Add Event
+      </button>
     </div>
   );
 }
