@@ -53,9 +53,9 @@ app.post('/signup', async (req, res) => {
             }
             return res.status(200).json({ message: "User registered successfully" });
         });
-    } catch (err) {
-        console.error('Error hashing password:', err);
-        res.status(500).json({ message: "Error in hashing password" });
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        return res.status(500).json({ message: "Internal server error" });
     }
 });
 
