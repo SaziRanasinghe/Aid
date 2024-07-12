@@ -1,19 +1,49 @@
 import React, { useState } from 'react';
 import Img1 from '../assets/main-images/up.png'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; 
 
 function Signup() {
+  const [values, setValues] = useState({
+    name: '',
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });  
   const [selectedOption, setSelectedOption] = useState('donor');
+  const navigate = useNavigate();
 
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);
   };
 
+  const handleInput = (event) => {
+    const { name, value } = event.target;
+    setValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+ const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (values.password !== values.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const res = await axios.post('http://localhost:5000/signup', values);
+      console.log(res);
+      navigate('/login');
+    } catch (err) {
+      console.error(err);
+    }
+  };
   // State to manage whether to show each dialog
   const [showDonorForm, setShowDonorForm] = useState(false);
   const [showRecipientForm, setShowRecipientForm] = useState(false);
   const [showDistributorForm, setShowDistributorForm] = useState(false);
   const [showAdminForm, setShowAdminForm] = useState(false);
-
+  
   const openDialog = (option) => {
     switch (option) {
       case 'donor':
@@ -68,52 +98,58 @@ function Signup() {
     closeDialogs(); // Close the dialog after saving
   };
 
+ 
+ 
+
   return (
     <div>
         <div className="flex flex-col mx-8 md:flex-row justify-between mt-16 font-sans mb-16">
         <div className="w-full pt-8 md:w-1/2 ml-16 -mr-32 lg:px-10 bg-gray-500 rounded-lg">
            <h2 className="text-blue-700 text-5xl text-center font-bold capitalize">sign up</h2>
-           <h2 class="text-white text-2xl font-extralight mb-2 text-center">Welcome to your <span className='text-orange-400 font-bold'>AidNexus!</span>
-      </h2>
-             <form action="" class="flex flex-col gap-y-5 pt-5">
+           <h2 class="text-white text-2xl font-extralight mb-2 text-center">Welcome to your 
+            <span className='text-orange-400 font-bold'>AidNexus!</span></h2>
 
-                <label className="block">
-                    <span className="after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Name
-                    </span>  
-                    <input type="text" name="text" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Name" required/>
-                </label>
+            <form onSubmit={handleSubmit} action="" class="flex flex-col gap-y-5 pt-5">
+              <label className="block">
+                <span className="after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Name
+                </span>  
+                <input type="text" name="text" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Name"
+                onChange={handleInput} required/>
+              </label>
 
-                <label className="block">
-                    <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">username
-                    </span>  
-                    <input type="text" name="text" className="text-black placeholder:text-base mt-1 px-3 py-2   bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Username" required/>
-                </label>
+              <label className="block">
+                <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">username
+                </span>  
+                <input type="text" name="text" className="text-black placeholder:text-base mt-1 px-3 py-2   bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Username"  
+                onChange={handleInput} required/>
+              </label>
       
-                <label className="block">
-                   <span className="  after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">
-                   Email
-                  </span>  
-                <input type="email" name="email" className="text-black placeholder:text-base mt-1 px-3 py-2   bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Email" required/>
-                </label>
+              <label className="block">
+                <span className="  after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Email
+                </span>  
+                <input type="email" name="email" className="text-black placeholder:text-base mt-1 px-3 py-2   bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Email"     value={values.email}
+                onChange={handleInput} required/>
+              </label>
        
-                <label className="block">
-                    <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">
-                        password
-                    </span>  
-                <input type="password" name="password" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Password" required/>
-                </label>
+              <label className="block">
+                <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">password
+                </span>  
+                <input type="password" name="password" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1" placeholder="Password"  value={values.password}
+                onChange={handleInput} required/>
+              </label>
 
                <label className="block">
-                    <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">
-                        confirm password
-                    </span>  
-                    <input type="password" name="password" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md sm:text-sm focus:ring-1" placeholder="Confirm Password" required/>
+                  <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">confirm password
+                  </span>  
+                  <input type="password" name="password" className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md sm:text-sm focus:ring-1" placeholder="Confirm Password"   value={values.confirmPassword}
+                onChange={handleInput} required/>
                 </label>
                  
                 <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">
                         Select your Role
-                    </span>
-                <div className="p-4 space-y-4">
+                </span>
+
+      <div className="p-4 space-y-4">
       <div className="space-x-4">
         <input
           type="radio"
@@ -287,8 +323,9 @@ function Signup() {
       )}
     </div>
 
-      <input type="submit" className="tracking-wide capitalize bg-orange-400 hover:bg-orange-600 text-gray-500 bg-four p-3 rounded-md shadow-sm cursor-pointer transition-all ease-in-out delay-150 duration-300 hover:bg-main hover:text-white" value="create account"/>
+      <input type="submit" className="tracking-wide capitalize bg-orange-400 hover:bg-orange-600 text-gray-500 bg-four p-3 rounded-md shadow-sm cursor-pointer transition-all ease-in-out delay-150 duration-300 hover:bg-main hover:text-white" value="create account" onClick={handleSubmit}/>
       
+
       <div className="d-flex items-center text-center">
         <span className="w-full relative inline-block px-10 font-bold text-sm text-white tracking-wide after:content-[''] after:flex after:relative  after:-mt-2.5 after:w-2/5 after:h-0.5 after:bg-white after:left-0 before:content-[''] before:flex before:relative before:top-[13px] before:w-2/5 before:h-0.5 before:bg-white before:mt-2.5 before:left-[60%]">or</span>
       </div>

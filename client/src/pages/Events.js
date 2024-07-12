@@ -1,8 +1,24 @@
-import React from 'react'
+// import React from 'react'
 import img1 from '../assets/gallery-images/donation 1.jpg'
 import img2 from '../assets/gallery-images/donation 3.webp'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
 
 function Events() {
+  const [events, setEvents] = useState([]);
+
+useEffect(() => {
+    const fetchEvents = async () => {
+        try {
+            const response = await axios.get('/api/events');
+            setEvents(response.data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
+    fetchEvents();
+}, []);
   return (
     <div className="mx-4 my-8">
       <div className="flex flex-col space-y-8">
@@ -54,8 +70,38 @@ function Events() {
           </div>
         </div>
       </div>
-    </div>
-  )
-}
+     
+ 
 
-export default Events
+
+ 
+        <h1>Events</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Date & Time</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {events.map(event => (
+                    <tr key={event.event_id}>
+                        <td>{event.event_id}</td>
+                        <td>{event.event_name}</td>
+                        <td>{event.event_description}</td>
+                        <td>{event.event_datetime}</td>
+                        <td>{event.is_event_active ? 'Yes' : 'No'}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+    );
+  };
+  
+  export default Events;
+  
+ 

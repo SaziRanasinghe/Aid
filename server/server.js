@@ -41,16 +41,26 @@ createGetEndpoint(
     }
 })*/
 
-app.post('/signup', (req, res) => {
-    const { name,username, email, password } = req.body;
-    const sql = "INSERT INTO user (username, email, password) VALUES (?, ?, ?)";
-    aid_nexus.query(sql, [username, email, password], (err, result) => {
-        if (err) {
-            console.error('Error inserting data:', err);
-            return res.status(500).json({ message: "Error in node"+err });
-        }
-        return res.status(200).json({ message: "User registered successfully" });
-    });
+ 
+ 
+app.post('/signup', async (req, res) => {
+    const { name, username, email, password } = req.body;
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const sql = "INSERT INTO user (name, username, email, password) VALUES (?, ?, ?, ?)";
+        aid_nexus.query(sql, [name, username, email, hashedPassword], (err, result) => {
+            if (err) {
+                console.error('Error inserting data:', err);
+                return res.status(500).json({ message: "Error in node" + err });
+            }
+            return res.status(200).json({ message: "User registered successfully" });
+        });
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+ 
 });
 
 
