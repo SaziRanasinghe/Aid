@@ -41,6 +41,8 @@ createGetEndpoint(
     }
 })*/
 
+ 
+ 
 app.post('/signup', async (req, res) => {
     const { name, username, email, password } = req.body;
     try {
@@ -57,6 +59,8 @@ app.post('/signup', async (req, res) => {
         console.error('Error hashing password:', error);
         return res.status(500).json({ message: "Internal server error" });
     }
+});
+ 
 });
 
 
