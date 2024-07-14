@@ -1,10 +1,13 @@
+
+
 const mysql = require('mysql2');
 
 // Database connection setup
 const aid_nexus = mysql.createConnection({
+
   host: 'localhost',
   user: 'root',
-  password: 'Sasi@19991120',
+  password: '1234',
   database: 'aid_nexus'
 });
 
@@ -17,7 +20,7 @@ aid_nexus.connect((err) => {
 });
 
 // Function for POST requests
-function createPostEndpoint(app, endpoint, sqlQuery, params) {
+function createPostEndpoint(app, endpoint, sqlQuery, params,successMessage) {
   app.post(endpoint, (req, res) => {
     const values = params.map(param => req.body[param]);
 
@@ -27,7 +30,7 @@ function createPostEndpoint(app, endpoint, sqlQuery, params) {
         res.status(500).send('Server error');
         return;
       }
-      res.status(200).send('Operation successful');
+      res.status(200).send(successMessage);
     });
   });
 }
@@ -48,4 +51,5 @@ function createGetEndpoint(app, endpoint, sqlQuery, params = []) {
   });
 }
 
-module.exports = { createPostEndpoint, createGetEndpoint };
+
+module.exports = { aid_nexus,createPostEndpoint, createGetEndpoint };
