@@ -14,6 +14,19 @@ function Administrator() {
       });
   }, []);
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const toggleDialog = () => {
+    setIsDialogOpen(!isDialogOpen);
+  };
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    // Handle form submission logic here
+    console.log('Form submitted');
+    toggleDialog();
+  };
+
   return (
     <div className="max-w-screen-2xl mx-auto px-4 pb-16 lg:pb-24 mt-8 relative">
       <h1 className='text-5xl text-center mb-4 font-bold'> Dashboard of <span className='text-orange-600'>Administrators</span></h1>
@@ -62,10 +75,116 @@ function Administrator() {
           </tbody>
         </table>
       </div>
-      <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>
+      <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'onClick={toggleDialog}>
       Add Event
       </button>
+      {isDialogOpen && (
+        <div
+          className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
+          onClick={toggleDialog}
+        >
+          <div
+            className="bg-white shadow-2xl m-4 sm:m-8 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b pb-2 text-xl">
+              <h6 className="text-xl text-black font-bold">Add Event Information </h6>
+              <button type="button" className="text-black" onClick={toggleDialog}>
+                ✖
+              </button>
+            </div>
+            <div className="p-2">
+              <form onSubmit={handleFormSubmit}>
+              <div className="mb-4 flex space-x-4">
+    <div className="flex-1">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
+        Event Id 
+      </label>
+      <input
+        type="text"
+        id="id"
+        name="id"
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        required
+      />
     </div>
+    </div>
+    <div className="mb-4">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+        Event Name
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        required
+      />
+    </div>
+    
+    <div className="flex-1">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="desc">
+                    Event Description
+                  </label>
+                  <input
+                    type="text"
+                    id="desc"
+                    name="desc"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                  </div>
+
+                  <div className="flex-1">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="datetime">
+                    Event date & time
+                  </label>
+                  <input
+                    type="text"
+                    id="datetime"
+                    name="datetime"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                   <div className="mb-4">
+    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+      is event active? 
+    </label>
+    <select
+      id="category"
+      name="category"
+      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      required
+    >
+      <option value="yes">yes</option>
+      <option value="no">no</option>
+      
+    </select>
+  </div>
+                  </div><br/>
+                  <div className="flex items-center justify-between">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onClick={toggleDialog}
+                  >
+                    Cancel
+                  </button>
+                </div>
+ 
+  </form>
+  </div>
+  </div>
+    </div>
+     )}
+    </div>
+  
   );
 }
  
