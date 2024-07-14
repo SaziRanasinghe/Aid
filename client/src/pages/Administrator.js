@@ -3,6 +3,13 @@ import axios from 'axios';
 
 function Administrator() {
   const [data, setData] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    event_name: '',
+    event_description: '',
+    event_datetime: '',
+    active: 'yes'
+  });
 
   useEffect(() => {
     axios.get('http://localhost:5000/api/user')
@@ -14,17 +21,27 @@ function Administrator() {
       });
   }, []);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
+   
   const toggleDialog = () => {
     setIsDialogOpen(!isDialogOpen);
   };
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted');
-    toggleDialog();
+    axios.post('http://localhost:5000/api/events', formData)
+      .then(response => {
+        console.log(response.data);
+        toggleDialog();
+        // Optionally, you can refresh the data to show the new event in the table
+      })
+      .catch(error => {
+        console.error('There was an error submitting the form!', error);
+      });
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   return (
@@ -105,6 +122,7 @@ function Administrator() {
         id="id"
         name="id"
         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        onChange={handleInputChange}
         required
       />
     </div>
@@ -118,6 +136,7 @@ function Administrator() {
         id="name"
         name="name"
         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        onChange={handleInputChange}
         required
       />
     </div>
@@ -131,31 +150,34 @@ function Administrator() {
                     id="desc"
                     name="desc"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={handleInputChange}
                     required
                   />
                   </div>
 
                   <div className="flex-1">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="datetime">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_datetime">
                     Event date & time
                   </label>
                   <input
                     type="text"
-                    id="datetime"
-                    name="datetime"
+                    id="event_datetime"
+                    name="event_datetime"
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={handleInputChange}
                     required
                   />
-                   <div className="mb-4">
-    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
-      is event active? 
-    </label>
-    <select
-      id="category"
-      name="category"
-      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-      required
-    >
+                    <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="active">
+                    Is event active? 
+                  </label>
+                  <select
+                    id="active"
+                    name="active"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={handleInputChange}
+                    required
+                  >
       <option value="yes">yes</option>
       <option value="no">no</option>
       

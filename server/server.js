@@ -61,7 +61,7 @@ app.post('/signup', async (req, res) => {
     }
 });
  
-});
+
 
 
 // GET endpoint for retrieving events
