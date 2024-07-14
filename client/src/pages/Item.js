@@ -1,7 +1,20 @@
-import React from 'react'
+import React, { useState } from 'react';
 import cloth from '../assets/category-images/cloth.png'
+import { Link } from 'react-router-dom';
 
 function Item() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const toggleDialog = () => {
+    setIsDialogOpen(!isDialogOpen);
+  };
+
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    // Handle form submission logic here
+    console.log('Form submitted');
+    toggleDialog();
+  };
   return (
     <div class="antialiased">
   
@@ -112,15 +125,172 @@ function Item() {
     
             <p class="text-gray-300"> one time used. good condition and good look. red and white colors. white ice cap. location is kottawa. size is medium. imported from america and brand is crokodile.</p>
             <div class="flex py-4 space-x-4">
-              
-              <button type="button" class="h-14 px-6 py-2 font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white">
+            <Link to="#"> 
+              <button type="button" class="h-14 px-6 py-2 font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white" onClick={toggleDialog}>
                 Request Delivery
+              </button></Link>
+              {isDialogOpen && (
+        <div
+          className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
+          onClick={toggleDialog}
+        >
+          <div
+            className="bg-white shadow-2xl m-4 sm:m-8 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b pb-2 text-xl">
+              <h6 className="text-xl text-black font-bold">Add Donation Information</h6>
+              <button type="button" className="text-black" onClick={toggleDialog}>
+                ✖
               </button>
+            </div>
+            <div className="p-2">
+              <form onSubmit={handleFormSubmit}>
+              <div className="mb-4 flex space-x-4">
+    <div className="flex-1">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fname">
+        First Name
+      </label>
+      <input
+        type="text"
+        id="fname"
+        name="fname"
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        required
+      />
+    </div>
+    <div className="flex-1">
+      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lname">
+        Last Name
+      </label>
+      <input
+        type="text"
+        id="lname"
+        name="lname"
+        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        required
+      />
+    </div>
+  </div>
+  <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="address1">
+                    Address Line 1
+                  </label>
+                  <input
+                    type="text"
+                    id="address1"
+                    name="address1"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="address2">
+                    Address Line 2
+                  </label>
+                  <input
+                    type="text"
+                    id="address2"
+                    name="address2"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                </div>
+                <div className="mb-4 flex space-x-4">
+    <div className="flex-1">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="city">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    name="city"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                  </div>
+                  
+                  <div className="flex-1">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="zip">
+                    Zip Code
+                  </label>
+                  <input
+                    type="text"
+                    id="zip"
+                    name="zip"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                  </div>
+                  </div>
+                  <div className="mb-4">
+    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+      Category of Goods
+    </label>
+    <select
+      id="category"
+      name="category"
+      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      required
+    >
+      <option value="">Select a category</option>
+      <option value="electronics">Electronics</option>
+      <option value="furniture">Furniture</option>
+      <option value="clothing">Clothing</option>
+      <option value="books">Books</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+                  <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    required
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onClick={toggleDialog}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <p className="mb-4 text-black">By providing your phone number, you are consenting to receive calls and SMS/MMS msgs, including autodialed<br/> and prerecorded calls and texts, to that number regarding your donation and future opportunities to donate.</p>
+              </form>
+            </div>
+            </div>
+            </div>
+            )}
             </div>
           </div>
         </div>
       </div>
     </div>
+  
       </div>
   )
 }
