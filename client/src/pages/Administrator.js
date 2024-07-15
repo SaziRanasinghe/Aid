@@ -8,7 +8,7 @@ function Administrator() {
     event_name: '',
     event_description: '',
     event_datetime: '',
-    active: 'yes'
+    active: true
   });
 
   useEffect(() => {
@@ -32,17 +32,21 @@ function Administrator() {
       .then(response => {
         console.log(response.data);
         toggleDialog();
-        // Optionally, you can refresh the data to show the new event in the table
+
       })
       .catch(error => {
         console.error('There was an error submitting the form!', error);
       });
   };
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: name === 'active' ? value === 'yes' : value
+    }));
   };
+
+
 
   return (
     <div className="max-w-screen-2xl mx-auto px-4 pb-16 lg:pb-24 mt-8 relative">
@@ -112,102 +116,93 @@ function Administrator() {
             </div>
             <div className="p-2">
               <form onSubmit={handleFormSubmit}>
-              <div className="mb-4 flex space-x-4">
-    <div className="flex-1">
-      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="id">
-        Event Id 
-      </label>
-      <input
-        type="text"
-        id="id"
-        name="id"
-        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        onChange={handleInputChange}
-        required
-      />
-    </div>
-    </div>
-    <div className="mb-4">
-      <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-        Event Name
-      </label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        onChange={handleInputChange}
-        required
-      />
-    </div>
-    
-    <div className="flex-1">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="desc">
-                    Event Description
-                  </label>
-                  <input
-                    type="text"
-                    id="desc"
-                    name="desc"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    onChange={handleInputChange}
-                    required
-                  />
+                <div className="mb-4 flex flex-col space-y-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_name">
+                      Event Name
+                    </label>
+                    <input
+                        type="text"
+                        id="event_name"
+                        name="event_name"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={handleInputChange}
+                        value={formData.event_name}
+                        required
+                    />
                   </div>
 
-                  <div className="flex-1">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_datetime">
-                    Event date & time
-                  </label>
-                  <input
-                    type="text"
-                    id="event_datetime"
-                    name="event_datetime"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    onChange={handleInputChange}
-                    required
-                  />
-                    <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="active">
-                    Is event active? 
-                  </label>
-                  <select
-                    id="active"
-                    name="active"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    onChange={handleInputChange}
-                    required
-                  >
-      <option value="yes">yes</option>
-      <option value="no">no</option>
-      
-    </select>
-  </div>
-                  </div><br/>
-                  <div className="flex items-center justify-between">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_description">
+                      Event Description
+                    </label>
+                    <input
+                        type="text"
+                        id="event_description"
+                        name="event_description"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={handleInputChange}
+                        value={formData.event_description}
+                        required
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_datetime">
+                      Event date & time
+                    </label>
+                    <input
+                        type="datetime-local"
+                        id="event_datetime"
+                        name="event_datetime"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={handleInputChange}
+                        value={formData.event_datetime}
+                        required
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="active">
+                      Is event active?
+                    </label>
+                    <select
+                        id="active"
+                        name="active"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={handleInputChange}
+                        value={formData.active ? 'yes' : 'no'}
+                        required
+                    >
+                      <option value="yes">yes</option>
+                      <option value="no">no</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
                   <button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      type="submit"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                   >
                     Submit
                   </button>
                   <button
-                    type="button"
-                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={toggleDialog}
+                      type="button"
+                      className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      onClick={toggleDialog}
                   >
                     Cancel
                   </button>
                 </div>
- 
-  </form>
-  </div>
-  </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-     )}
-    </div>
-  
+
   );
 }
- 
- export default Administrator
+
+export default Administrator
