@@ -50,7 +50,15 @@ createGetEndpoint(
     }
 })*/
 
- 
+ // POST endpoint for adding a donation
+createPostEndpoint(
+    app,
+    '/api/donations',
+    'INSERT INTO donations (category, title, description, location, condition, image, donor_name, telephone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    ['category', 'title', 'description', 'location', 'condition', 'image', 'name', 'telephone'],
+    "Donation successfully registered"
+);
+
  
 app.post('/signup', async (req, res) => {
     const { name, username, email, password } = req.body;
