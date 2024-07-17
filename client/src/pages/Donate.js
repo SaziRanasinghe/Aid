@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Button, FormControl, FormLabel, RadioGroup, FormControlLabel, Radio, Select, MenuItem, InputLabel } from '@mui/material';
+import axios from 'axios';
 import img1 from '../assets/category-images/food.webp'
 import img2 from '../assets/category-images/cloth.png'
 import img3 from '../assets/category-images/furniture.png'
@@ -27,13 +28,31 @@ function Donate() {
     setShowAdditionalFields(event.target.value === 'yes');
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
     const imageFile = formData.get('image'); // Getting the image file
-    console.log(formJson, imageFile);
+    try {
+      const response = await axios.post('http://localhost:5000/api/donations', {
+        category: formJson.category,
+        title: formJson.title,
+        description: formJson.description,
+        location: formJson.location,
+        condition: formJson.condition,
+        image: imageFile.name, // Assuming you're just saving the file name
+        name: formJson.name,
+        telephone: formJson.telephone,
+      });
+      console.log(response.data);
+      alert('Donation submitted successfully');
+    } catch (error) {
+      console.error('Error submitting donation:', error);
+      alert('Error submitting donation');
+    }
+
     handleClose();
+
   };
   return (
 <div class="p-20">

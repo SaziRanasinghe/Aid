@@ -21,3 +21,11 @@ createGetEndpoint(
     'SELECT * FROM event WHERE event_id = ?',
     ['id']
 );
+
+createPostEndpoint(
+    app,
+    '/api/donations',
+    'INSERT INTO donations (category, title, description, location, condition, image, donor_name, telephone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    ['category', 'title', 'description', 'location', 'condition', 'image', 'name', 'telephone'],
+    "Donation successfully registered"
+);
