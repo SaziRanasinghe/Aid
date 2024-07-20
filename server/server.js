@@ -41,14 +41,15 @@ createGetEndpoint(
     ['id']
 );
 //*******************************************************User*******************************************************************************
-// Register New User
-/*app.post('api/register', async (req, res) => {
-    const {username, email, password, role} = req.body;
+ //Register New User
+/app.post('api/register', async (req, res) => {
+    const {username, email, password, role,address,telephone,additionalInfo,employmentStatus,
+        vehicleType, vehicleNo, monthlyIncome, monthlyExpenses, homeOwnership, extraInfo} = req.body;
+    try{
+        const [results] = await aid_nexus.query('SELECT * FROM Users')
+    });
 
-    try {
-        const [existingUser] = await pool.query('SELECT * FROM user WHERE email =?',[email])
-    }
-})*/
+})
 
  
  
