@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const bcrypt = require('bcrypt');
 const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus'); // Adjust the path as needed
 
@@ -6,6 +7,12 @@ const app = express();
 const router = express.Router();
 app.use(express.json());
 
+
+app.use(cors({
+    origin: true,
+    methods: 'GET,PUT,POST,DELETE,OPTIONS',
+    allowedHeaders:['content-type', 'Authorization']
+}));
 
 
 // ***************************************************Event***************************************************************
