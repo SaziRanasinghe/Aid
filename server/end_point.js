@@ -30,3 +30,14 @@ createPostEndpoint(
     ['category', 'title', 'description', 'location', 'condition', 'image', 'name', 'telephone'],
     "Donation successfully registered"
 );
+
+// POST endpoint for adding a contributor's contact
+createPostEndpoint(
+    app,
+    '/api/contributors_contact',
+    'INSERT INTO contributors_contact (phone_number) VALUES (?)',
+    ['phone_number'],
+    "Phone number successfully added"
+);
+
+  

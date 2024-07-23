@@ -59,6 +59,15 @@ createPostEndpoint(
     "Donation successfully registered"
 );
 
+// POST endpoint for adding phone numbers to contributers_contact
+createPostEndpoint(
+    app,
+    '/api/contributors_contact',
+    'INSERT INTO contributors_contact (phone_number) VALUES (?)',
+    ['phone_number'],
+    "Phone number successfully added"
+);
+
  
 app.post('/signup', async (req, res) => {
     const { name, username, email, password } = req.body;
