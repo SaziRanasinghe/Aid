@@ -3,6 +3,7 @@ import img1 from '../assets/gallery-images/donation 1.jpg'
 import img2 from '../assets/gallery-images/donation 3.webp'
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 
 function Events() {
@@ -39,9 +40,10 @@ useEffect(() => {
             <div className="block mt-1 mr-6 text-lg md:w-3/4 lg:w-3/4 leading-tight font-semibold text-gray-200 hover:underline">Helping for financial difficulties</div>
             <p className="mb-2 mt-2 mr-6 text-gray-300 md:w-3/4 lg:w-3/4">Although we face constraints such as limited resources for outreach and technical development, the dedication and collaboration of our stakeholders empower us to overcome these challenges. Together, we strive to create a lasting positive impact, fostering a more sustainable, equitable, and compassionate society.</p>
             <div className="flex justify-end h-16 mb-2">
+            <Link to='/funds'>
               <a className="tickets bg-transparent uppercase hover:bg-orange-500 text-gray-100 font-semibold hover:text-black py-2 px-4 border-2 border-orange-500 hover:border-transparent mb-2 mr-4">
                 Donate
-              </a>
+              </a></Link>
             </div>
           </div>
         </div>
@@ -63,9 +65,10 @@ useEffect(() => {
             <div className="block mt-1 mr-6 text-lg md:w-3/4 lg:w-3/4 leading-tight font-semibold text-gray-200 hover:underline">Helping for financial difficulties</div>
             <p className="mb-2 mt-2 mr-6 text-gray-300 md:w-3/4 lg:w-3/4">Although we face constraints such as limited resources for outreach and technical development, the dedication and collaboration of our stakeholders empower us to overcome these challenges. Together, we strive to create a lasting positive impact, fostering a more sustainable, equitable, and compassionate society.</p>
             <div className="flex justify-end h-16 mb-2">
+            <Link to='/funds'>
               <a className="tickets bg-transparent uppercase hover:bg-orange-500 text-gray-100 font-semibold hover:text-black py-2 px-4 border-2 border-orange-500 hover:border-transparent mb-2 mr-4">
                 Donate
-              </a>
+              </a></Link>
             </div>
           </div>
         </div>

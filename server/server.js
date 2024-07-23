@@ -6,6 +6,8 @@ const app = express();
 const router = express.Router();
 app.use(express.json());
 
+
+
 // ***************************************************Event***************************************************************
 
 // POST endpoint for adding an event
