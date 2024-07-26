@@ -7,7 +7,7 @@ const aid_nexus = mysql.createConnection({
 
   host: 'localhost',
   user: 'root',
-  password: 'Sasi@19991120',
+  password: '1234',
   database: 'aid_nexus'
 });
 
