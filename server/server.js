@@ -52,16 +52,25 @@ createPostEndpoint(
 
 
 //*******************************************************User*******************************************************************************
-// Register New User
-/*app.post('api/register', async (req, res) => {
-    const {username, email, password, role} = req.body;
+ //Register New User
+/app.post('api/register', async (req, res) => {
+    const {username, email, password, role,address,telephone,additionalInfo,employmentStatus,
+        vehicleType, vehicleNo, monthlyIncome, monthlyExpenses, homeOwnership, extraInfo} = req.body;
+    try{
+        const [results] = await aid_nexus.query('SELECT * FROM Users')
+    });
 
-    try {
-        const [existingUser] = await pool.query('SELECT * FROM user WHERE email =?',[email])
-    }
-})*/
+})
 
- 
+ // POST endpoint for adding a donation
+createPostEndpoint(
+    app,
+    '/api/donations',
+    'INSERT INTO donations (category, title, description, location, condition, image, donor_name, telephone) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    ['category', 'title', 'description', 'location', 'condition', 'image', 'name', 'telephone'],
+    "Donation successfully registered"
+);
+
  
 app.post('/signup', async (req, res) => {
     const { name, username, email, password } = req.body;

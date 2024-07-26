@@ -21,7 +21,7 @@ createGetEndpoint(
     'SELECT * FROM event WHERE event_id = ?',
     ['id']
 );
-
+// POST endpoint for adding a donation
 createPostEndpoint(
     app,
     '/api/donations',

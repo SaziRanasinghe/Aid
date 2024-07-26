@@ -9,7 +9,13 @@ function Signup() {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    address:'',
+    telephone:'',
+    employmentStatus:'',
+    vehicleType:'',
+    vehicleNumber:'',
+    additionalInfo:''
   });  
   const [selectedOption, setSelectedOption] = useState('donor');
   const navigate = useNavigate();
@@ -30,6 +36,10 @@ function Signup() {
       return;
     }
 
+    const userPayload={
+        ...values,
+        role:selectedOption
+    }
     try {
       const res = await axios.post('http://localhost:5000/signup', values);
       console.log(res);
@@ -109,7 +119,7 @@ function Signup() {
            <h2 class="text-white text-2xl font-extralight mb-2 text-center">Welcome to your 
             <span className='text-orange-400 font-bold'>AidNexus!</span></h2>
 
-            <form onSubmit={handleSubmit} action="" class="flex flex-col gap-y-5 pt-5">
+            <form onSubmit={handleSubmit} action="" className="flex flex-col gap-y-5 pt-5">
               <label className="block">
                 <span className="after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Name
                 </span>  
