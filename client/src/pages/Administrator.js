@@ -281,114 +281,13 @@ function Administrator() {
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Dashboard</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Payments</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Update Gallery</a>
-          <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black" onClick={toggleDialog}> Event Form</a>
+          <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black"> Event Form</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">User Details</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Event Details</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Tables & Graphs</a>
           <a href="#" className="block py-3.5 px-4 rounded hover:bg-orange-500 hover:text-black">Contact Notifications</a>
         </nav>
       </aside>
-      {isDialogOpen && (
-        <div
-          className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
-          onClick={toggleDialog}
-        >
-          <div
-            className="bg-white shadow-2xl m-4 sm:m-8 p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center border-b pb-2 text-xl">
-              <h6 className="text-xl text-black font-bold">Add Event Information </h6>
-              <button type="button" className="text-black" onClick={toggleDialog}>
-                ✖
-              </button>
-            </div>
-            <div className="p-2">
-              <form onSubmit={handleFormSubmit}>
-                <div className="mb-4 flex flex-col space-y-4">
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_name">
-                      Event Name
-                    </label>
-                    <input
-                        type="text"
-                        id="event_name"
-                        name="event_name"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        onChange={handleInputChange}
-                        value={formData.event_name}
-                        required
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_description">
-                      Event Description
-                    </label>
-                    <input
-                        type="text"
-                        id="event_description"
-                        name="event_description"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        onChange={handleInputChange}
-                        value={formData.event_description}
-                        required
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_datetime">
-                      Event date & time
-                    </label>
-                    <input
-                        type="datetime-local"
-                        id="event_datetime"
-                        name="event_datetime"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        onChange={handleInputChange}
-                        value={formData.event_datetime}
-                        required
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="active">
-                      Is event active?
-                    </label>
-                    <select
-                        id="active"
-                        name="active"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        onChange={handleInputChange}
-                        value={formData.active ? 'yes' : 'no'}
-                        required
-                    >
-                      <option value="yes">yes</option>
-                      <option value="no">no</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <button
-                      type="submit"
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  >
-                    Submit
-                  </button>
-                  <button
-                      type="button"
-                      className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      onClick={toggleDialog}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
       <main className="flex-1 p-6">
         <div className="flex justify-between items-center mb-6">
         <h1 className='text-5xl text-center mb-4 font-bold'> Dashboard of <span className='text-blue-900'>Administrators</span></h1>
@@ -442,8 +341,115 @@ function Administrator() {
             ))}
           </tbody>
         </table>
-      </main>
+ 
+ 
+      </div>
+      <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'onClick={toggleDialog}>
+      Add Event
+      </button>
+      {isDialogOpen && (
+        <div
+          className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
+          onClick={toggleDialog}
+        >
+          <div
+            className="bg-white shadow-2xl m-4 sm:m-8 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b pb-2 text-xl">
+              <h6 className="text-xl text-black font-bold">Add Event Information </h6>
+              <button type="button" className="text-black" onClick={toggleDialog}>
+                ✖
+              </button>
+            </div>
+            <div className="p-2">
+              <form onSubmit={handleFormSubmit}>
+                <div className="mb-4 flex flex-col space-y-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_name">
+                      Event Name
+                    </label>
+                    <input
+                        type="text"
+                        id="event_name"
+                        name="event_name"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        onChange={handleInputChange}
+                        value={formData.event_name}
+                        required
+                    />
+                  </div>
+
+                      <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_description">
+                          Event Description
+                        </label>
+                        <input
+                            type="text"
+                            id="event_description"
+                            name="event_description"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onChange={handleInputChange}
+                            value={formData.event_description}
+                            required
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_datetime">
+                          Event date & time
+                        </label>
+                        <input
+                            type="datetime-local"
+                            id="event_datetime"
+                            name="event_datetime"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onChange={handleInputChange}
+                            value={formData.event_datetime}
+                            required
+                        />
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="active">
+                          Is event active?
+                        </label>
+                        <select
+                            id="active"
+                            name="active"
+                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onChange={handleInputChange}
+                            value={formData.active ? 'yes' : 'no'}
+                            required
+                        >
+                          <option value="yes">yes</option>
+                          <option value="no">no</option>
+                        </select>
+                      </div>
+                    </div>
+
+                <div className="flex items-center justify-between">
+                  <button
+                      type="submit"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Submit
+                  </button>
+                  <button
+                      type="button"
+                      className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      onClick={toggleDialog}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+
   );
 };
 
