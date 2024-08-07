@@ -236,7 +236,38 @@ createGetEndpoint(
     'SELECT * FROM user'
 );
 
+// Trend Analyzer Routes
 
+app.get('/api/recipient-trends', (req, res) => {
+    const query = `SELECT recipient, SUM(amount) as total_aid, COUNT(DISTINCT year) as year_count
+                 FROM aid_projects
+                 GROUP BY recipient
+                 ORDER BY total_aid DESC
+                 LIMIT 5`;
+
+    aid_nexus.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+app.get('/api/time-trends', (req, res) => {
+    const query = `SELECT year, SUM(amount) as total_aid
+                 FROM aid_projects
+                 GROUP BY year
+                 ORDER BY year`;
+
+    aid_nexus.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json(results);
+        }
+    });
+});
 
 
 

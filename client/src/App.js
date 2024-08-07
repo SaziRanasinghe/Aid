@@ -18,6 +18,7 @@ import Events from './pages/Events';
 import Gallery from './pages/Gallery';
 import Administrator from './pages/Administrator';
 import Funds from './pages/funds';
+import TrendAnalyzer from "./pages/TrendAnalyzer";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path='gallery' element={<Gallery/>}/>
         <Route path='admin' element={<Administrator/>}/>
         <Route path='funds' element={<Funds/>}/>
+          <Route path='/charts' element={<TrendAnalyzer/>}/>
       </Routes>
       <Footer/>
       </BrowserRouter>
