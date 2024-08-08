@@ -3,14 +3,17 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const Stripe = require("stripe");
 require('dotenv').config();
 const jwt = require('jsonwebtoken')
-const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus'); // Adjust the path as needed
+const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus');
+const {response} = require("express"); // Adjust the path as needed
 
 const app = express();
 const router = express.Router();
 app.use(express.json());
 
+const stripe = Stripe('sk_test_51PRB5KITJDLyY2z92ew4fs8ZRXoYNmg99mVGfHi0WfvkFAi7g9CfKtGvTpYmY6UBBvfyxxmIU6DsuXKisUbgTn0500ipxYIvW8');
 
 app.use(cors({
     origin: true,
@@ -249,6 +252,27 @@ app.get('/api/time-trends', (req, res) => {
         }
     });
 });
+
+////////////////////////////////////////Create Payment Key /////////////////////////////////////////////
+app.post('/api/create-payment-intent', async (req, res) => {
+    const { amount } = req.body;
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount * 100, // amount in cents
+            currency: 'usd',
+        });
+
+        res.send({
+            clientSecret: paymentIntent.client_secret,
+        });
+    } catch (error) {
+        res.status(500).send({
+            error: error.message,
+        });
+    }
+});
+
 
 
 
