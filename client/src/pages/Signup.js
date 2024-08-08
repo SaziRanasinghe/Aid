@@ -59,6 +59,7 @@ function Signup() {
         });
         console.log(response.data);
         alert(response.data.message);
+        navigate('/login')
     }catch (error){
         console.error("Registration Error:",error)
         alert("Registration Failed.Please Try Again")
@@ -210,12 +211,12 @@ function Signup() {
                 <label className="block">
                     <span
                         className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Home Address</span>
-                    <textarea name="home-address"
-                              className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1"
-                              value={formData.address}
-                              onChange={handleInput}
-                              placeholder="Home Address"
-                              required></textarea>
+                                    <textarea name="address"
+                                              className="text-black placeholder:text-base mt-1 px-3 py-2 bg-white border shadow-sm border-slate-300 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-sky-500 block w-full rounded-md focus:ring-1"
+                                              value={formData.address}
+                                              onChange={handleInput}
+                                              placeholder="Home Address"
+                                              required></textarea>
                 </label>
 
                 <span className="capitalize after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">
@@ -261,14 +262,14 @@ function Signup() {
                             <div className="bg-white p-8 rounded shadow-md z-50">
                                 <h2 className="text-lg font-bold mb-4 text-black">Recipient Form</h2>
                                 <label className="block">
-                                        <span className="block text-sm font-medium text-black">Employment Status:</span>
-                                        <select name="employmentStatus"
-                                                className="text-black w-full mt-1 px-3 py-2 border-b-2 border-slate-300 focus:outline-none focus:border-sky-500"
-                                                required>
-                                            <option value="">Select status...</option>
-                                            <option value="employed">Employed</option>
-                                            <option value="unemployed">Unemployed</option>
-                                        </select>
+                                    <span className="block text-sm font-medium text-black">Employment Status:</span>
+                                    <select name="employmentStatus"
+                                            className="text-black w-full mt-1 px-3 py-2 border-b-2 border-slate-300 focus:outline-none focus:border-sky-500"
+                                            required>
+                                        <option value="">Select status...</option>
+                                        <option value="employed">Employed</option>
+                                        <option value="unemployed">Unemployed</option>
+                                    </select>
 
                                     <span
                                         className="after:ml-0.5 after:text-white block text-sm font-medium text-black "> Monthly Income:</span>
