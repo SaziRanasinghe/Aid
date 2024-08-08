@@ -43,7 +43,7 @@ function App() {
         <Route path='gallery' element={<Gallery/>}/>
         <Route path='admin' element={<Administrator/>}/>
         <Route path='funds' element={<Funds/>}/>
-          <Route path='/charts' element={<TrendAnalyzer/>}/>
+        <Route path='/charts' element={<TrendAnalyzer/>}/>
       </Routes>
       <Footer/>
       </BrowserRouter>
