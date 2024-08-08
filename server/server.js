@@ -3,14 +3,17 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const Stripe = require("stripe");
 require('dotenv').config();
 const jwt = require('jsonwebtoken')
-const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus'); // Adjust the path as needed
+const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus');
+const {response} = require("express"); // Adjust the path as needed
 
 const app = express();
 const router = express.Router();
 app.use(express.json());
 
+const stripe = Stripe('sk_test_51PRB5KITJDLyY2z92ew4fs8ZRXoYNmg99mVGfHi0WfvkFAi7g9CfKtGvTpYmY6UBBvfyxxmIU6DsuXKisUbgTn0500ipxYIvW8');
 
 app.use(cors({
     origin: true,
@@ -101,26 +104,25 @@ createPostEndpoint(
 
 //*******************************************************User*******************************************************************************
 // Register New Suer
-app.post('/api/register',async (req,res) => {
-    const{ name,username,email_address,password,telephone_number,user_role,address,unique_questions}= req.body;
+app.post('/api/register', async (req, res) => {
+    const { name, username, email, password, telephone_number, user_role, address, unique_questions } = req.body;
 
-    try{
+    try {
         // Hash Password
-        const hashedPassword = await bcrypt.hash(password,10);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        //Insert user
+        // Insert user
         const [userResult] = await aid_nexus.promise().query(
-            "INSERT INTO user(name,username,email,hashed_password,telephone_number) VALUES (?,?,?,?,?)",
-            [name, username, email_address, hashedPassword, telephone_number]
+            "INSERT INTO user(name, username, email, hashed_password, telephone_number) VALUES (?, ?, ?, ?, ?)",
+            [name, username, email, hashedPassword, telephone_number]
         );
 
         const userId = userResult.insertId;
 
-        //Insert Address
-
+        // Insert Address
         const [addressResult] = await aid_nexus.promise().query(
-            'INSERT INTO user_address (user_id,user_address) VALUES (?, ?)',
-            [userId,address ]
+            'INSERT INTO user_address (user_id, user_address) VALUES (?, ?)',
+            [userId, address]
         );
         const userAddressId = addressResult.insertId;
 
@@ -128,30 +130,30 @@ app.post('/api/register',async (req,res) => {
         switch (user_role) {
             case 'donor':
                 await aid_nexus.promise().query(
-                    "INSERT INTO doner(user_id,address_id) VALUES(?,?)",
-                    [userId,userAddressId]
+                    "INSERT INTO doner(user_id, address_id) VALUES(?, ?)",
+                    [userId, userAddressId]
                 );
                 break;
-            case 'receiver':
+            case 'recipient':
                 await aid_nexus.promise().query(
-                    "INSERT INTO receiver(user_id,employment_status,monthly_income,monthly_expenses,house_ownership,address_id) VALUES(?,?,?,?,?,?)",
-                    [userId,unique_questions.question1,unique_questions.question2,unique_questions.question3,unique_questions.question4,userAddressId]
+                    "INSERT INTO receiver(user_id, employment_status, monthly_income, monthly_expenses, house_ownership, address_id) VALUES(?, ?, ?, ?, ?, ?)",
+                    [userId, unique_questions.employmentStatus, unique_questions.monthlyIncome, unique_questions.monthlyExpenses, unique_questions.houseStatus, userAddressId]
                 );
                 break;
             case 'distributor':
                 await aid_nexus.promise().query(
-                    "INSERT INTO volunteer(user_id,address_id,employment_status,vehicle_type,vehicle_number,is_active) VALUES(?,?,?,?,?,?) ",
-                    [userId,userAddressId,unique_questions.question1,unique_questions.question2,unique_questions.question3,true]
+                    "INSERT INTO volunteer(user_id, address_id, employment_status, vehicle_type, vehicle_number, is_active) VALUES(?, ?, ?, ?, ?, ?)",
+                    [userId, userAddressId, unique_questions.employmentStatus, unique_questions.vehicleType, unique_questions.vehicleNo, true]
                 );
                 break;
             default:
                 throw new Error('Unknown user_role');
-
         }
-        res.status(200).json({message:"User registered successfully"});
-        }catch (error){
+
+        res.status(200).json({ message: "User registered successfully" });
+    } catch (error) {
         console.error('Error executing query:', error);
-        res.status(500).send({message:"Error executing query:", error:error.message});
+        res.status(500).send({ message: "Error executing query:", error: error.message });
     }
 });
 
@@ -268,6 +270,27 @@ app.get('/api/time-trends', (req, res) => {
         }
     });
 });
+
+////////////////////////////////////////Create Payment Key /////////////////////////////////////////////
+app.post('/api/create-payment-intent', async (req, res) => {
+    const { amount } = req.body;
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount * 100, // amount in cents
+            currency: 'usd',
+        });
+
+        res.send({
+            clientSecret: paymentIntent.client_secret,
+        });
+    } catch (error) {
+        res.status(500).send({
+            error: error.message,
+        });
+    }
+});
+
 
 
 

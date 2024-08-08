@@ -19,10 +19,20 @@ import Gallery from './pages/Gallery';
 import Administrator from './pages/Administrator';
 import Funds from './pages/funds';
 import TrendAnalyzer from "./pages/TrendAnalyzer";
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import PayPalCheckout from "./pages/PayPalCheckout";
+import ThankYou from "./pages/ThankYou";
 
 function App() {
   return (
-    <div> 
+
+    <div>
+        <PayPalScriptProvider
+            options={{
+                'client-id': 'ARs3bgYB4thTp0x4_u2nRk_tViVBMkT8m04wnLxWeHap2Sak9dtsv-fxaa1-YX67lq8RQ73JkshpqVAA',
+                currency: 'USD',
+            }}
+        >
       <BrowserRouter>
       <Header/>
       <Routes>
@@ -43,10 +53,12 @@ function App() {
         <Route path='gallery' element={<Gallery/>}/>
         <Route path='admin' element={<Administrator/>}/>
         <Route path='funds' element={<Funds/>}/>
-        <Route path='/charts' element={<TrendAnalyzer/>}/>
+          <Route path='/charts' element={<TrendAnalyzer/>}/>
+          <Route path="/thankyou" element={<ThankYou />} />
       </Routes>
       <Footer/>
       </BrowserRouter>
+        </PayPalScriptProvider>
     </div>
   );
 }
