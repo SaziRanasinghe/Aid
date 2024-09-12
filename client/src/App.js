@@ -22,6 +22,7 @@ import TrendAnalyzer from "./pages/TrendAnalyzer";
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import PayPalCheckout from "./pages/PayPalCheckout";
 import ThankYou from "./pages/ThankYou";
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
         <Route path='events' element={<Events/>}/>
         <Route path='gallery' element={<Gallery/>}/>
         <Route path='admin' element={<Administrator/>}/>
+        <Route path='dashboard' element={<Dashboard/>}/>
         <Route path='funds' element={<Funds/>}/>
           <Route path='/charts' element={<TrendAnalyzer/>}/>
           <Route path="/thankyou" element={<ThankYou />} />
