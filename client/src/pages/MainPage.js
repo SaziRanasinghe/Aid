@@ -99,7 +99,7 @@ export default function MainPage() {
              <div class="p-6">
     <h2 class="font-bold mb-2 text-2xl text-orange-600">Administrator</h2>
     <p class="mb-2 text-gray-700">Admins manage users, donations and requests, assign distributions, generate reports, configure system settings.</p>
-    <Link to='/admin'>
+    <Link to='/dashboard'>
     <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>Explore</button>
 </Link>
 </div>
