@@ -23,6 +23,14 @@ import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import PayPalCheckout from "./pages/PayPalCheckout";
 import ThankYou from "./pages/ThankYou";
 import Dashboard from './pages/Dashboard';
+import Form from './pages/Form';
+import Payments from './pages/payments';
+import Notification from './pages/Notification';
+import User from './pages/User';
+// import Sidebar from './pages/Sidebar';
+
+ 
+
 
 function App() {
   return (
@@ -36,6 +44,7 @@ function App() {
         >
       <BrowserRouter>
       <Header/>
+      {/* <ConditionalSidebar /> */}
       <Routes>
         <Route index element={<MainPage/>}/>
          
@@ -54,6 +63,10 @@ function App() {
         <Route path='gallery' element={<Gallery/>}/>
         <Route path='admin' element={<Administrator/>}/>
         <Route path='dashboard' element={<Dashboard/>}/>
+        <Route path='payments' element={<Payments/>}/>
+        <Route path='form' element={<Form/>}/>
+        <Route path='notification' element={<Notification/>}/>
+        <Route path='user' element={<User/>}/>
         <Route path='funds' element={<Funds/>}/>
           <Route path='/charts' element={<TrendAnalyzer/>}/>
           <Route path="/thankyou" element={<ThankYou />} />
@@ -65,4 +78,10 @@ function App() {
   );
 }
 
+// function ConditionalSidebar() {
+//   const location = useLocation();
+//   const showSidebarPaths = ['/payments', '/notification', '/user'];  
+
+//   return showSidebarPaths.includes(location.pathname) ? <Sidebar /> : null;
+// }
 export default App;
