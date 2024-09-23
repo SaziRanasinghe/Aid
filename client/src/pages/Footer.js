@@ -1,7 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react';
 import Logo from '../assets/main-images/logo.png'
+import axios from 'axios';
 
 export default function Footer() {
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5000/api/contributers_contact', { phoneNumber });
+      console.log(response.data.message);
+      setPhoneNumber('');
+    } catch (error) {
+      console.error('Error sending phone number:', error);
+    }
+  };
+
   return (
     <footer className='bg-gray-900  text-white'>
       <div className='md:flex md:justify-between md:items-center sm:px-12 px-4  py-7'>
@@ -10,15 +24,20 @@ export default function Footer() {
           <span className='text-orange-600'> Please Contact Us </span>  
         </h1>
         <img className= "h-16 w-auto" src={Logo}alt="logo" />
-        <div>
-          <input type='text' placeholder='Enter your ph.no' className='text-gray-800
-          sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded px-2 focus:outline-none'
+        <form onSubmit={handleSubmit}>
+          <input
+            type='text'
+            placeholder='Enter your ph.no'
+            className='text-gray-800 sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded px-2 focus:outline-none'
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
           />
-          <button className='bg-orange-600 hover:bg-orange-400 duration-300 px-5 py-2.5 font-[popins]
-          rounded-md text-white'>
+          <button
+            type='submit'
+            className='bg-orange-600 hover:bg-orange-400 duration-300 px-5 py-2.5 font-[popins] rounded-md text-white'>
             Send Number
           </button>
-        </div>
+        </form>
       </div>
         <div className="container pt-9   ">
       <div className="mb-9 flex justify-center ">

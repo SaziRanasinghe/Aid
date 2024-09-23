@@ -127,7 +127,7 @@ function Item() {
             <div class="flex py-4 space-x-4">
             <Link to="#"> 
               <button type="button" class="h-14 px-6 py-2 font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white" onClick={toggleDialog}>
-                Request Delivery
+                Confirm & Request Delivery
               </button></Link>
               {isDialogOpen && (
         <div
