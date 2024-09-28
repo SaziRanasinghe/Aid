@@ -8,6 +8,8 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken')
 const { aid_nexus,createPostEndpoint, createGetEndpoint } = require('./aid_nexus');
 const {response} = require("express"); // Adjust the path as needed
+const { verifyToken, validateLoginInput, loginLimiter, loginLogger } = require('./middleware');
+
 
 const app = express();
 const router = express.Router();
@@ -20,6 +22,7 @@ app.use(cors({
     methods: 'GET,PUT,POST,DELETE,OPTIONS',
     allowedHeaders:['content-type', 'Authorization']
 }));
+
 
 // File Uploading
 const storage = multer.diskStorage({
@@ -48,6 +51,8 @@ const authMiddleware = (req, res, next) => {
         res.status(500).send({message:"Token is not valid",error});
     }
 };
+
+
 // ***************************************************Event***************************************************************
 
 // POST endpoint for adding an event

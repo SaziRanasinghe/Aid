@@ -12,23 +12,42 @@ function Login() {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
 
-  const handleLoginSuccess = (token) => {
+  const handleLoginSuccess = (token, isAdmin) => {
     localStorage.setItem('token', token);
-    navigate('/mainpage');
+    if (isAdmin) {
+      localStorage.setItem('isAdmin', 'true');
+      navigate('/admin');
+    } else {
+      localStorage.removeItem('isAdmin');
+      navigate('/mainpage');
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      // Check for admin credentials
+      if (values.email === 'admin@example.com' && values.password === 'admin123') {
+        // For admin, we're using a dummy token and storing it in localStorage
+        const dummyAdminToken = 'admin-dummy-token-' + Date.now();
+        handleLoginSuccess(dummyAdminToken, true);
+        return;
+      }
+
+      // For non-admin users, proceed with the regular login process
       const res = await axios.post('http://localhost:5000/api/login', values);
       if (res.data.token) {
-        handleLoginSuccess(res.data.token);
+        handleLoginSuccess(res.data.token, false);
       } else {
         setError('Invalid username or password');
       }
     } catch (err) {
-      console.log(err);
-      setError('An error occurred during login. Please try again later.');
+      console.error(err);
+      if (err.response && err.response.status === 401) {
+        setError('Invalid username or password');
+      } else {
+        setError('An error occurred during login. Please try again later.');
+      }
     }
   };
 

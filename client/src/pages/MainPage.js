@@ -66,7 +66,7 @@ export default function MainPage() {
              <div class="p-6">
     <h2 class="font-bold mb-2 text-2xl text-orange-600">Donar</h2>
     <p class="mb-2 text-gray-700"> Individuals or organizations providing goods or funds to support those in need through the portal.</p>
-    <Link to='/donate'>
+    <Link to='/login'>
     <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>
       Donate
       </button></Link>
@@ -78,7 +78,7 @@ export default function MainPage() {
              <div class="p-6">
     <h2 class="font-bold mb-2 text-2xl text-orange-600">Reciepient</h2>
     <p class="mb-2 text-gray-700  ">Reciepient is individuals or groups seeking assistance or resources through the portal for various needs.</p>
-    <Link to='/category'>
+    <Link to='/login'>
     <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>Get</button></Link>
   </div>
 </div>
@@ -99,7 +99,7 @@ export default function MainPage() {
              <div class="p-6">
     <h2 class="font-bold mb-2 text-2xl text-orange-600">Administrator</h2>
     <p class="mb-2 text-gray-700">Admins manage users, donations and requests, assign distributions, generate reports, configure system settings.</p>
-    <Link to='/dashboard'>
+    <Link to='/login'>
     <button className='bg-gradient-to-r from-orange-600 to-orange-400 border-2 border-orange-600 rounded-full px-4 py-2 text-white hover:scale-105 duration-200'>Explore</button>
 </Link>
 </div>
