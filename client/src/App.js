@@ -15,7 +15,6 @@ import Distribute from './pages/Distribute';
 import Aboutus from './pages/Aboutus';
 import Events from './pages/Events';
 import Gallery from './pages/Gallery';
-import Administrator from './pages/Administrator';
 import Funds from './pages/funds';
 import TrendAnalyzer from "./pages/TrendAnalyzer";
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
@@ -69,7 +68,6 @@ function App() {
                         <Route path='aboutus' element={<Aboutus />} />
                         <Route path='events' element={<Events />} />
                         <Route path='gallery' element={<Gallery />} />
-                        <Route path='admin' element={<AdminRoute><Administrator /></AdminRoute>} />
                         <Route path='dashboard' element={<AdminRoute><Dashboard /></AdminRoute>} />
                         <Route path='payments' element={<AdminRoute><Payments /></AdminRoute>} />
                         <Route path='form' element={<Form />} />
