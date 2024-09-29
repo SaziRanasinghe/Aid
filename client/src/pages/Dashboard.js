@@ -1,8 +1,9 @@
  // src/App.js
- import React, { useState } from 'react';
+ import React, {useEffect, useState} from 'react';
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
 import { FaEye, FaTrash, FaUsers, FaBuffer } from 'react-icons/fa';
+ import DashboardCard from "./DashBoardCards";
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale);
 
@@ -20,6 +21,45 @@ function App() {
       },
     ],
   };
+
+  const [metrics,setMetrics] = React.useState({
+    totalUsers : 0,
+    fundBalance : 0,
+    donor : 0,
+    volunteers : 0
+  });
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const [usersRes, balanceRes, donorsRes, volunteersRes] = await Promise.all([
+          fetch('http://localhost:5000/api/total-users'),
+          fetch('http://localhost:5000/api/fund-balance'),
+          fetch('http://localhost:5000/api/donors'),
+          fetch('http://localhost:5000/api/volunteers')
+        ]);
+
+        const [usersData, balanceData, donorsData, volunteersData] = await Promise.all([
+          usersRes.json(),
+          balanceRes.json(),
+          donorsRes.json(),
+          volunteersRes.json()
+        ]);
+
+        setMetrics({
+          totalUsers: usersData[0].count,
+          fundBalance: balanceData[0].balance,
+          donors: donorsData[0].count,
+          volunteers: volunteersData[0].count
+        });
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      }
+    };
+
+    fetchMetrics();
+  }, []);
+
 
   const options = {
     responsive: true,
@@ -239,26 +279,27 @@ function App() {
       {/* Dashboard Cards */}
       <main className="flex-1 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-r from-blue-400 to-indigo-600 text-white p-6 rounded-lg shadow-md">
-            <h2 className="text-sm font-semibold">Total Users</h2>
-            <p className="text-3xl font-bold mt-2">1,024</p>
-             
-          </div>
-          <div className="bg-gradient-to-r from-green-500 to-teal-500 text-white p-6 rounded-lg shadow-md">
-            <h2 className="text-sm font-semibold">Fund Balance</h2>
-            <p className="text-3xl font-bold mt-2">Rs. 10,432</p>
-            
-          </div>
-          <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-6 rounded-lg shadow-md">
-            <h2 className="text-sm font-semibold">Donors</h2>
-            <p className="text-3xl font-bold mt-2">232</p>
-             
-          </div>
-          <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-lg shadow-md">
-            <h2 className="text-sm font-semibold">Volunteers</h2>
-            <p className="text-3xl font-bold mt-2">5</p>
-           
-          </div>
+          <DashboardCard
+              title="Total Users"
+              value={metrics.totalUsers}
+              gradient="from-blue-400 to-indigo-600"
+          />
+          <DashboardCard
+              title="Fund Balance"
+              value={`Rs. ${metrics.fundBalance}`}
+              gradient="from-green-500 to-teal-500"
+          />
+          <DashboardCard
+              title="Donors"
+              value={metrics.donors}
+              gradient="from-yellow-500 to-orange-500"
+          />
+          <DashboardCard
+              title="Volunteers"
+              value={metrics.volunteers}
+              gradient="from-red-500 to-pink-500"
+          />
+
         </div>
 
         {/* Chart Section */}

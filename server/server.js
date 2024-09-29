@@ -296,9 +296,34 @@ app.post('/api/create-payment-intent', async (req, res) => {
     }
 });
 
+//// Get endpoint for dashboard
+createGetEndpoint(app, '/api/total-users', 'SELECT COUNT(*) as count FROM user');
+createGetEndpoint(app, '/api/fund-balance', 'SELECT SUM(donation_amount) as balance FROM money_donation');
+createGetEndpoint(app, '/api/donors', 'SELECT COUNT(*) as count FROM doner');
+createGetEndpoint(app, '/api/volunteers', 'SELECT COUNT(*) as count FROM volunteer');
 
 
+// Get endpoint for payment page
 
+const paymentsQuery = `
+  SELECT 
+    md.donation_id,
+    md.donation_date,
+    md.donation_amount,
+    u.name AS donor_name,
+    md.transaction_id
+  FROM 
+    money_donation md
+  JOIN 
+    doner d ON md.doner_id = d.doner_id
+  JOIN 
+    user u ON d.user_id = u.id
+  ORDER BY 
+    md.donation_date DESC
+  LIMIT 50
+`;
+
+createGetEndpoint(app, '/api/payments-information', paymentsQuery);
 
 
 
