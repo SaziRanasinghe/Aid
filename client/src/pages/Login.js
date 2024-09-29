@@ -16,7 +16,7 @@ function Login() {
     localStorage.setItem('token', token);
     if (isAdmin) {
       localStorage.setItem('isAdmin', 'true');
-      navigate('/admin');
+      navigate('/dashboard');
     } else {
       localStorage.removeItem('isAdmin');
       navigate('/mainpage');
