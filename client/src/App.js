@@ -73,7 +73,7 @@ function App() {
                         <Route path='form' element={<Form />} />
                         <Route path='notification' element={<Notification />} />
                         <Route path='user' element={<User />} />
-                        <Route path='funds' element={<AdminRoute><Funds /></AdminRoute>} />
+                        <Route path='funds' element={<Funds />} />
                         <Route path='/charts' element={<AdminRoute><TrendAnalyzer /></AdminRoute>} />
                         <Route path="/thankyou" element={<ThankYou />} />
                     </Routes>
