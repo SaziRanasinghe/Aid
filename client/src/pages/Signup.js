@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Img1 from '../assets/main-images/up.png'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Signup() {
     const [formData, setFormData] = useState({
@@ -44,7 +46,7 @@ function Signup() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
-            setError("Passwords don't match!");
+            toast.error("Passwords don't match!");
             return;
         }
         try {
@@ -58,15 +60,16 @@ function Signup() {
                 address: formData.address,
                 unique_questions: formData.unique_questions
             });
-            console.log(response.data);
-            alert(response.data.message);
-            navigate('/login')
+            toast.success(response.data.message);
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000); // Navigate after 2 seconds
         } catch (error) {
             console.error("Registration Error:", error);
             if (error.response && error.response.data) {
-                setError(error.response.data.message || "Registration Failed. Please Try Again");
+                toast.error(error.response.data.message || "Registration Failed. Please Try Again");
             } else {
-                setError("An unexpected error occurred. Please try again.");
+                toast.error("An unexpected error occurred. Please try again.");
             }
         }
     };
@@ -126,6 +129,7 @@ function Signup() {
 
   return (
     <div>
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
         <div className="flex flex-col mx-8 md:flex-row justify-between mt-16 font-sans mb-16">
         <div className="w-full pt-8 md:w-1/2 ml-16 -mr-32 lg:px-10 bg-gray-500 rounded-lg">
            <h2 className="text-blue-700 text-5xl text-center font-bold capitalize">sign up</h2>
