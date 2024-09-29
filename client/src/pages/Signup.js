@@ -17,6 +17,7 @@ function Signup() {
     });
   const [selectedOption, setSelectedOption] = useState('donor');
   const navigate = useNavigate();
+  const [error, setError] = useState(" ");
 
   const handleOptionChange = (e) => {
     const role = e.target.value;
@@ -40,34 +41,37 @@ function Signup() {
     }));
   };
 
- const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-        alert("Password don't match!");
-        return;
-    }
-    try {
-        const response = await axios.post("http://localhost:5000/api/register", {
-            name: formData.name,
-            username: formData.username,
-            email: formData.email,
-            password: formData.password,
-            telephone_number: formData.telephone_number,
-            user_role: formData.user_role,
-            address: formData.address,
-            unique_questions: formData.unique_questions
-        });
-        console.log(response.data);
-        alert(response.data.message);
-        navigate('/login')
-    }catch (error){
-        console.error("Registration Error:",error)
-        alert("Registration Failed.Please Try Again")
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (formData.password !== formData.confirmPassword) {
+            setError("Passwords don't match!");
+            return;
+        }
+        try {
+            const response = await axios.post("http://localhost:5000/api/register", {
+                name: formData.name,
+                username: formData.username,
+                email: formData.email,
+                password: formData.password,
+                telephone_number: formData.telephone_number,
+                user_role: formData.user_role,
+                address: formData.address,
+                unique_questions: formData.unique_questions
+            });
+            console.log(response.data);
+            alert(response.data.message);
+            navigate('/login')
+        } catch (error) {
+            console.error("Registration Error:", error);
+            if (error.response && error.response.data) {
+                setError(error.response.data.message || "Registration Failed. Please Try Again");
+            } else {
+                setError("An unexpected error occurred. Please try again.");
+            }
+        }
+    };
 
-
-  };
-  // State to manage whether to show each dialog
+    // State to manage whether to show each dialog
   const [showRecipientForm, setShowRecipientForm] = useState(false);
   const [showDistributorForm, setShowDistributorForm] = useState(false);
   
@@ -128,6 +132,7 @@ function Signup() {
            <h2 className="text-white text-2xl font-extralight mb-2 text-center">Welcome to your
             <span className='text-orange-400 font-bold'>AidNexus!</span></h2>
             <form onSubmit={handleSubmit} action="" className="flex flex-col gap-y-5 pt-5">
+                {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
                 <label className="block">
                     <span
                         className="after:ml-0.5 after:text-white block text-sm font-medium text-orange-700">Name</span>

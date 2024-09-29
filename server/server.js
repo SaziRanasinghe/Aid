@@ -108,11 +108,21 @@ createPostEndpoint(
 
 
 //*******************************************************User*******************************************************************************
-// Register New Suer
+// Register New User
 app.post('/api/register', async (req, res) => {
     const { name, username, email, password, telephone_number, user_role, address, unique_questions } = req.body;
 
     try {
+        // Check for existing user
+        const [existingUsers] = await aid_nexus.promise().query(
+            "SELECT * FROM user WHERE username = ? OR email = ?",
+            [username, email]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ message: 'Username or email already exists' });
+        }
+
         // Hash Password
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -125,40 +135,53 @@ app.post('/api/register', async (req, res) => {
         const userId = userResult.insertId;
 
         // Insert Address
-        const [addressResult] = await aid_nexus.promise().query(
-            'INSERT INTO user_address (user_id, user_address) VALUES (?, ?)',
-            [userId, address]
-        );
-        const userAddressId = addressResult.insertId;
+        try {
+            const [addressResult] = await aid_nexus.promise().query(
+                'INSERT INTO user_address (user_id, user_address) VALUES (?, ?)',
+                [userId, address]
+            );
+            const userAddressId = addressResult.insertId;
 
-        // Insert uniques question based on user_role
-        switch (user_role) {
-            case 'donor':
-                await aid_nexus.promise().query(
-                    "INSERT INTO doner(user_id, address_id) VALUES(?, ?)",
-                    [userId, userAddressId]
-                );
-                break;
-            case 'recipient':
-                await aid_nexus.promise().query(
-                    "INSERT INTO receiver(user_id, employment_status, monthly_income, monthly_expenses, house_ownership, address_id) VALUES(?, ?, ?, ?, ?, ?)",
-                    [userId, unique_questions.employmentStatus, unique_questions.monthlyIncome, unique_questions.monthlyExpenses, unique_questions.houseStatus, userAddressId]
-                );
-                break;
-            case 'distributor':
-                await aid_nexus.promise().query(
-                    "INSERT INTO volunteer(user_id, address_id, employment_status, vehicle_type, vehicle_number, is_active) VALUES(?, ?, ?, ?, ?, ?)",
-                    [userId, userAddressId, unique_questions.employmentStatus, unique_questions.vehicleType, unique_questions.vehicleNo, true]
-                );
-                break;
-            default:
-                throw new Error('Unknown user_role');
+            // Insert unique questions based on user_role
+            switch (user_role) {
+                case 'donor':
+                    await aid_nexus.promise().query(
+                        "INSERT INTO doner(user_id, address_id) VALUES(?, ?)",
+                        [userId, userAddressId]
+                    );
+                    break;
+                case 'recipient':
+                    await aid_nexus.promise().query(
+                        "INSERT INTO receiver(user_id, employment_status, monthly_income, monthly_expenses, house_ownership, address_id) VALUES(?, ?, ?, ?, ?, ?)",
+                        [userId, unique_questions.employmentStatus, unique_questions.monthlyIncome, unique_questions.monthlyExpenses, unique_questions.houseStatus, userAddressId]
+                    );
+                    break;
+                case 'distributor':
+                    await aid_nexus.promise().query(
+                        "INSERT INTO volunteer(user_id, address_id, employment_status, vehicle_type, vehicle_number, is_active) VALUES(?, ?, ?, ?, ?, ?)",
+                        [userId, userAddressId, unique_questions.employmentStatus, unique_questions.vehicleType, unique_questions.vehicleNo, true]
+                    );
+                    break;
+                default:
+                    throw new Error('Unknown user_role');
+            }
+
+            res.status(200).json({ message: "User registered successfully" });
+        } catch (addressError) {
+            if (addressError.code === 'ER_DUP_ENTRY') {
+                // Delete the user if address insertion fails
+                await aid_nexus.promise().query("DELETE FROM user WHERE id = ?", [userId]);
+                return res.status(400).json({ message: 'Duplicate address added' });
+            }
+            throw addressError;
         }
-
-        res.status(200).json({ message: "User registered successfully" });
     } catch (error) {
         console.error('Error executing query:', error);
-        res.status(500).send({ message: "Error executing query:", error: error.message });
+        if (error.code === 'ER_DUP_ENTRY') {
+            res.status(400).json({ message: 'An error occurred due to duplicate information' });
+        } else {
+            res.status(500).json({ message: "Error executing query:", error: error.message });
+        }
     }
 });
 
