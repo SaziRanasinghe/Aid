@@ -12,17 +12,20 @@ function Login() {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
 
-  const handleLoginSuccess = (token, role) => {
+  const handleLoginSuccess = (token, role, id) => {
     localStorage.setItem('token', token);
     localStorage.setItem('userRole', role);
+    localStorage.setItem('userId', id);
 
     switch(role) {
       case 'donor':
-      case 'distributor':
         navigate('/donate');
         break;
+      case 'distributor':
+        navigate('/distribute');
+        break;
       case 'recipient':
-        navigate('/receive');
+        navigate('/products');
         break;
       default:
         navigate('/mainpage');
@@ -36,13 +39,16 @@ function Login() {
       if (values.email === 'admin@example.com' && values.password === 'admin123') {
         const dummyAdminToken = 'admin-dummy-token-' + Date.now();
         localStorage.setItem('isAdmin', 'true');
-        handleLoginSuccess(dummyAdminToken, 'admin');
-        navigate('/dashboard')
+        handleLoginSuccess(dummyAdminToken, 'admin', '0');
+        navigate('/dashboard');
+        return;
       }
+
       const res = await axios.post('http://localhost:5000/api/login', values);
-      if (res.data.token && res.data.role) {
+      if (res.data.token && res.data.role && res.data.userId) {
         localStorage.removeItem('isAdmin');
-        handleLoginSuccess(res.data.token, res.data.role);
+        handleLoginSuccess(res.data.token, res.data.role, res.data.userId);
+        console.log('User ID:', res.data.userId);
       } else {
         setError('Invalid username or password');
       }
