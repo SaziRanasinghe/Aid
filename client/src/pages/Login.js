@@ -27,6 +27,9 @@ function Login() {
       case 'recipient':
         navigate('/products');
         break;
+      case 'admin':
+        navigate('/dashboard');
+        break;
       default:
         navigate('/mainpage');
     }
@@ -40,7 +43,6 @@ function Login() {
         const dummyAdminToken = 'admin-dummy-token-' + Date.now();
         localStorage.setItem('isAdmin', 'true');
         handleLoginSuccess(dummyAdminToken, 'admin', '0');
-        navigate('/dashboard');
         return;
       }
 
