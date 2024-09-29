@@ -554,6 +554,94 @@ createGetEndpoint(
     u.registration_date DESC`
 );
 
+// endpoint for distributor page
+app.get('/api/distribution/available-items', (req, res) => {
+    const query = `
+        SELECT di.id, di.title, di.description, di.location, c.category_name
+        FROM donate_items di
+        JOIN category c ON di.category_id = c.category_id
+        WHERE di.distributor_id IS NULL AND di.is_active = 0
+    `;
+
+    aid_nexus.query(query, (err, results) => {
+        if (err) {
+            console.error('Error fetching available items:', err);
+            res.status(500).json({ error: 'An error occurred while fetching items' });
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+// POST endpoint to update distributor_id
+app.post('/api/distribution/assign', (req, res) => {
+    const { itemId, userId } = req.body;
+
+    if (!itemId || !userId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const getVolunteerIdQuery = `
+        SELECT volunteer_id FROM volunteer WHERE user_id = ?
+    `;
+
+    const updateItemQuery = `
+        UPDATE donate_items
+        SET distributor_id = ?
+        WHERE id = ? AND distributor_id IS NULL AND is_active = 0
+    `;
+
+    aid_nexus.beginTransaction((err) => {
+        if (err) {
+            console.error('Error starting transaction:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        // First, get the volunteer_id
+        aid_nexus.query(getVolunteerIdQuery, [userId], (err, volunteerResult) => {
+            if (err) {
+                console.error('Error getting volunteer_id:', err);
+                return aid_nexus.rollback(() => {
+                    res.status(500).json({ error: 'Database error' });
+                });
+            }
+
+            if (volunteerResult.length === 0) {
+                return aid_nexus.rollback(() => {
+                    res.status(404).json({ error: 'Volunteer not found for this user' });
+                });
+            }
+
+            const volunteerId = volunteerResult[0].volunteer_id;
+
+            // Now update the donate_items table
+            aid_nexus.query(updateItemQuery, [volunteerId, itemId], (err, result) => {
+                if (err) {
+                    console.error('Error updating item:', err);
+                    return aid_nexus.rollback(() => {
+                        res.status(500).json({ error: 'Database error' });
+                    });
+                }
+
+                if (result.affectedRows === 0) {
+                    return aid_nexus.rollback(() => {
+                        res.status(400).json({ error: 'Item not available for pickup' });
+                    });
+                }
+
+                aid_nexus.commit((err) => {
+                    if (err) {
+                        console.error('Error committing transaction:', err);
+                        return aid_nexus.rollback(() => {
+                            res.status(500).json({ error: 'Database error' });
+                        });
+                    }
+                    res.json({ message: 'Item assigned successfully' });
+                });
+            });
+        });
+    });
+});
 
 
 
