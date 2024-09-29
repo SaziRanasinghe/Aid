@@ -236,7 +236,7 @@ app.post('/api/login', async (req, res) => {
             expiresIn: '1h'
         });
 
-        res.status(200).json({ message: "Successfully logged in", token, role: userRole });
+        res.status(200).json({ message: "Successfully logged in", token, role: userRole , userId: user.id });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -252,29 +252,32 @@ createGetEndpoint(
 
 
 //**********************************************Donate Items *********************************************************//
-app.post('/api/donate-items',authMiddleware,upload.single('image'),async(req,res) =>{
-    const{category_id,title,description,location,condition}=req.body;
-    const user_id = req.user.id;
-    const image = req.file? req.file.filename : null;
+app.post('/api/donate_items', upload.single('image'), (req, res) => {
+    console.log('Received donation request:', req.body);
+    console.log('File:', req.file);
 
-    try {
-        const [result] = await aid_nexus.promise().query(
-            'INSERT INTO donate_items(category_id,title,description,location,condition,image,user_id) VALUES(?,?,?,?,?,?)',
-            [category_id,title,description,location,condition,image,user_id]
-        );
-        res.status(200).json({
-            message:"Donation item created successfully",
-            id: result.insertId,
-            image_link:image?`/uploads/${image}`:null
-        });
-    }catch (error){
-        console.error('Error creating donation item',error);
-        res.status(500).json({message:"Internal Server Error:",error});
+    const { category, title, description, location, condition, goods, user_id } = req.body;
+    const image = req.file ? req.file.filename : null;
 
-    }
-})
+    // Use backticks for `condition` as it's a reserved keyword in MySQL
+    const sqlQuery = `INSERT INTO donate_items (category_id, title, description, location, \`condition\`, image, user_id) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
+    const values = [category, title, description, location, condition, image, user_id];
 
+    console.log('Executing SQL query:', sqlQuery);
+    console.log('With values:', values);
+
+    aid_nexus.query(sqlQuery, values, (err, result) => {
+        if (err) {
+            console.error('Error executing query:', err);
+            res.status(500).json({ error: 'Server error', details: err.message });
+            return;
+        }
+        console.log('Query result:', result);
+        res.status(200).json({ message: "Donation successfully registered" });
+    });
+});
 
 
 
