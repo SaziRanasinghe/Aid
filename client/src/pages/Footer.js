@@ -1,44 +1,75 @@
 import React, { useState } from 'react';
 import Logo from '../assets/main-images/logo.png'
-import axios from 'axios';
 
 export default function Footer() {
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitMessage('');
+
+    const apiKey = '7907b14e-3c51-40e1-a85d-bbcbdfbbd8c7';
+
     try {
-      const response = await axios.post('http://localhost:5000/api/contributers_contact', { phoneNumber });
-      console.log(response.data.message);
-      setPhoneNumber('');
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          access_key: apiKey,
+          phoneNumber: phoneNumber
+        })
+      });
+
+      const result = await response.json();
+      if (response.status === 200) {
+        setSubmitMessage('Phone number submitted successfully!');
+        setPhoneNumber(''); // Reset phone number to initial state
+      } else {
+        setSubmitMessage('There was an error submitting the form. Please try again.');
+      }
     } catch (error) {
-      console.error('Error sending phone number:', error);
+      setSubmitMessage('There was an error submitting the form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <footer className='bg-gray-900  text-white'>
-      <div className='md:flex md:justify-between md:items-center sm:px-12 px-4  py-7'>
-        <h1 className='lg:text-4xl text-3xl md:mb-0 mb-6 lg:leading-normal font-semibold md:w-2/5'>
-          To contribute or inquire about our services,
-          <span className='text-orange-600'> Please Contact Us </span>  
-        </h1>
-        <img className= "h-16 w-auto" src={Logo}alt="logo" />
-        <form onSubmit={handleSubmit}>
-          <input
-            type='text'
-            placeholder='Enter your ph.no'
-            className='text-gray-800 sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded px-2 focus:outline-none'
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-          <button
-            type='submit'
-            className='bg-orange-600 hover:bg-orange-400 duration-300 px-5 py-2.5 font-[popins] rounded-md text-white'>
-            Send Number
-          </button>
-        </form>
-      </div>
+      <footer className='bg-gray-900 text-white'>
+        <div className='md:flex md:justify-between md:items-center sm:px-12 px-4 py-7'>
+          <h1 className='lg:text-4xl text-3xl md:mb-0 mb-6 lg:leading-normal font-semibold md:w-2/5'>
+            To contribute or inquire about our services,
+            <span className='text-orange-600'> Please Contact Us </span>
+          </h1>
+          <img className="h-16 w-auto" src={Logo} alt="logo" />
+          <form onSubmit={handleSubmit}>
+            <input
+                type='text'
+                placeholder='Enter your ph.no'
+                className='text-gray-800 sm:w-72 w-full sm:mr-5 mr-1 lg:mb-0 mb-4 py-2.5 rounded px-2 focus:outline-none'
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+            <button
+                type='submit'
+                className='bg-orange-600 hover:bg-orange-400 duration-300 px-5 py-2.5 font-[popins] rounded-md text-white'
+                disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Sending...' : 'Send Number'}
+            </button>
+          </form>
+        </div>
+        {submitMessage && (
+            <div className={`text-center py-2 ${submitMessage.includes('successfully') ? 'bg-green-500' : 'bg-red-500'}`}>
+              {submitMessage}
+            </div>
+        )}
         <div className="container pt-9   ">
       <div className="mb-9 flex justify-center ">
         <a className="mr-9 text-white">
