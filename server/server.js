@@ -643,6 +643,88 @@ app.post('/api/distribution/assign', (req, res) => {
     });
 });
 
+app.post('/api/record-donation', async (req, res) => {
+    console.log('Received donation recording request:', req.body);
+    const { donationAmount, userId, transactionId } = req.body;
+
+    if (!donationAmount || !userId || !transactionId) {
+        console.error('Missing required fields:', { donationAmount, userId, transactionId });
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const findDonerQuery = `
+        SELECT d.doner_id 
+        FROM doner d 
+        JOIN user u ON d.user_id = u.id 
+        WHERE u.id = ?
+    `;
+
+    const insertDonationQuery = `
+        INSERT INTO money_donation (donation_date, donation_amount, doner_id, transaction_id)
+        VALUES (NOW(), ?, ?, ?)
+    `;
+
+    try {
+        // First, find the doner_id
+        const [donerResult] = await new Promise((resolve, reject) => {
+            aid_nexus.query(findDonerQuery, [userId], (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+        });
+
+        console.log('Doner query result:', donerResult);
+
+        if (!donerResult || !donerResult.doner_id) {
+            console.error('Doner not found for user:', userId);
+            return res.status(404).json({ success: false, error: 'Doner not found for this user' });
+        }
+
+        const donerId = donerResult.doner_id;
+
+        // Now, insert the donation record
+        const insertResult = await new Promise((resolve, reject) => {
+            aid_nexus.query(insertDonationQuery, [donationAmount, donerId, transactionId], (err, result) => {
+                if (err) reject(err);
+                else resolve(result);
+            });
+        });
+
+        console.log('Donation insert result:', insertResult);
+
+        res.json({ success: true, message: 'Donation recorded successfully' });
+    } catch (error) {
+        console.error('Error recording donation:', error);
+        res.status(500).json({ success: false, error: 'Failed to record donation' });
+    }
+});
+
+app.get('/api/monthly-donations', async (req, res) => {
+    const query = `
+    SELECT 
+      DATE_FORMAT(donation_date, '%Y-%m') AS month,
+      SUM(donation_amount) AS total_amount
+    FROM money_donation
+    WHERE donation_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+    GROUP BY DATE_FORMAT(donation_date, '%Y-%m')
+    ORDER BY month ASC
+  `;
+
+    try {
+        const results = await new Promise((resolve, reject) => {
+            aid_nexus.query(query, (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching monthly donations:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 
