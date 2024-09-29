@@ -12,14 +12,20 @@ function Login() {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
 
-  const handleLoginSuccess = (token, isAdmin) => {
+  const handleLoginSuccess = (token, role) => {
     localStorage.setItem('token', token);
-    if (isAdmin) {
-      localStorage.setItem('isAdmin', 'true');
-      navigate('/dashboard');
-    } else {
-      localStorage.removeItem('isAdmin');
-      navigate('/mainpage');
+    localStorage.setItem('userRole', role);
+
+    switch(role) {
+      case 'donor':
+      case 'distributor':
+        navigate('/donate');
+        break;
+      case 'recipient':
+        navigate('/receive');
+        break;
+      default:
+        navigate('/mainpage');
     }
   };
 
@@ -28,16 +34,15 @@ function Login() {
     try {
       // Check for admin credentials
       if (values.email === 'admin@example.com' && values.password === 'admin123') {
-        // For admin, we're using a dummy token and storing it in localStorage
         const dummyAdminToken = 'admin-dummy-token-' + Date.now();
-        handleLoginSuccess(dummyAdminToken, true);
-        return;
+        localStorage.setItem('isAdmin', 'true');
+        handleLoginSuccess(dummyAdminToken, 'admin');
+        navigate('/dashboard')
       }
-
-      // For non-admin users, proceed with the regular login process
       const res = await axios.post('http://localhost:5000/api/login', values);
-      if (res.data.token) {
-        handleLoginSuccess(res.data.token, false);
+      if (res.data.token && res.data.role) {
+        localStorage.removeItem('isAdmin');
+        handleLoginSuccess(res.data.token, res.data.role);
       } else {
         setError('Invalid username or password');
       }

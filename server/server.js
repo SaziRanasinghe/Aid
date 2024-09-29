@@ -194,16 +194,35 @@ app.post('/api/login', async (req, res) => {
             "SELECT * FROM user WHERE email = ?",
             [email]
         );
+
         // Check if result has rows
         if (!result || !result.length || result.length === 0) {
             console.log('No user found for email:', email);
             return res.status(401).json({ message: "Invalid username or password" });
         }
+
         const user = result[0];
+
         // Check Password
         const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid username or password" });
+        }
+
+        // Determine user role
+        let userRole = '';
+        const [donorResult] = await aid_nexus.promise().query("SELECT * FROM doner WHERE user_id = ?", [user.id]);
+        const [recipientResult] = await aid_nexus.promise().query("SELECT * FROM receiver WHERE user_id = ?", [user.id]);
+        const [volunteerResult] = await aid_nexus.promise().query("SELECT * FROM volunteer WHERE user_id = ?", [user.id]);
+
+        if (donorResult && donorResult.length > 0) {
+            userRole = 'donor';
+        } else if (recipientResult && recipientResult.length > 0) {
+            userRole = 'recipient';
+        } else if (volunteerResult && volunteerResult.length > 0) {
+            userRole = 'distributor';
+        } else {
+            return res.status(401).json({ message: "User role not found" });
         }
 
         const jwtSecret = process.env.JWT_SECRET;
@@ -213,11 +232,11 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
+        const token = jwt.sign({ userId: user.id, role: userRole }, process.env.JWT_SECRET, {
             expiresIn: '1h'
         });
 
-        res.status(200).json({ message: "Successfully logged in", token });
+        res.status(200).json({ message: "Successfully logged in", token, role: userRole });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });

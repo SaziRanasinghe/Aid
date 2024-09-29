@@ -7,11 +7,14 @@ import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('userRole');
     setIsLoggedIn(!!token);
+    setUserRole(role);
   }, []);
 
   const toggleMenu = () => {
@@ -21,7 +24,9 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('userRole');
     setIsLoggedIn(false);
+    setUserRole(null);
     navigate('/login');
   };
 
@@ -40,6 +45,15 @@ export default function Header() {
           <li><a href='/gallery' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>GALLERY</a></li>
           <li><a href='/contactus' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>CONTACT</a></li>
           <li><a href='/events' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>EVENTS</a></li>
+
+          {isLoggedIn && (userRole === 'donor' || userRole === 'distributor') && (
+              <li><a href='/donate' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>DONATE</a></li>
+          )}
+
+          {isLoggedIn && userRole === 'receiver' && (
+              <li><a href='/receive' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>RECEIVE</a></li>
+          )}
+
           <li>
             {isLoggedIn ? (
                 <button
