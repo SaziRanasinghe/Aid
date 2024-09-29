@@ -25,6 +25,7 @@ export default function Header() {
     localStorage.removeItem('token');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     setIsLoggedIn(false);
     setUserRole(null);
     navigate('/login');
@@ -50,8 +51,12 @@ export default function Header() {
               <li><a href='/donate' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>DONATE</a></li>
           )}
 
+          {isLoggedIn && ( userRole === 'distributor') && (
+              <li><a href='/distribute' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>DISTRIBUTE</a></li>
+          )}
+
           {isLoggedIn && userRole === 'receiver' && (
-              <li><a href='/receive' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>RECEIVE</a></li>
+              <li><a href='/products' className='p-4 text-gray-200 rounded md:hover:text-blue-700'>RECEIVE</a></li>
           )}
 
           <li>
