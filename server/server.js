@@ -325,6 +325,63 @@ const paymentsQuery = `
 
 createGetEndpoint(app, '/api/payments-information', paymentsQuery);
 
+// Get endpoint for notification page
+
+
+// GET endpoint for retrieving donors
+createGetEndpoint(
+    app,
+    '/api/donors-information',
+    `SELECT 
+    u.id, 
+    u.username, 
+    u.email, 
+    u.telephone_number, 
+    u.registration_date, 
+    u.last_login, 
+    u.is_active,
+    u.name,
+    d.doner_id,
+    ua.user_address
+  FROM 
+    user u
+  JOIN 
+    doner d ON u.id = d.user_id
+  LEFT JOIN 
+    user_address ua ON d.address_id = ua.id
+  ORDER BY 
+    u.registration_date DESC`
+);
+
+
+// GET endpoint for retrieving volunteers
+createGetEndpoint(
+    app,
+    '/api/volunteer-information',
+    `SELECT 
+    u.id, 
+    u.username, 
+    u.email, 
+    u.telephone_number, 
+    u.registration_date, 
+    u.last_login, 
+    u.is_active,
+    u.name,
+    v.volunteer_id,
+    v.employment_status,
+    v.vehicle_type,
+    v.vehicle_number,
+    v.is_active AS volunteer_active,
+    ua.user_address
+  FROM 
+    user u
+  JOIN 
+    volunteer v ON u.id = v.user_id
+  LEFT JOIN 
+    user_address ua ON v.address_id = ua.id
+  ORDER BY 
+    u.registration_date DESC`
+);
 
 
 
