@@ -725,6 +725,115 @@ app.get('/api/monthly-donations', async (req, res) => {
     }
 });
 
+app.get('/api/user/profile/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    const query = `
+        SELECT u.id, u.username, u.email, u.name, u.telephone_number, ua.user_address
+        FROM user u
+        LEFT JOIN user_address ua ON u.id = ua.user_id
+        WHERE u.id = ?
+    `;
+
+    try {
+        const results = await new Promise((resolve, reject) => {
+            aid_nexus.query(query, [userId], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        if (results.length > 0) {
+            res.json(results[0]);
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update user profile
+app.put('/api/user/profile/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    const { name, email, telephone_number, user_address } = req.body;
+
+    const userQuery = `
+        UPDATE user
+        SET name = ?, email = ?, telephone_number = ?
+        WHERE id = ?
+    `;
+
+    const addressQuery = `
+        INSERT INTO user_address (user_address, user_id)
+        VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE user_address = ?
+    `;
+
+    try {
+        await new Promise((resolve, reject) => {
+            aid_nexus.query(userQuery, [name, email, telephone_number, userId], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        await new Promise((resolve, reject) => {
+            aid_nexus.query(addressQuery, [user_address, userId, user_address], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        res.json({ message: 'Profile updated successfully' });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Change password
+app.put('/api/user/change-password/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    const getUserQuery = 'SELECT hashed_password FROM user WHERE id = ?';
+    const updatePasswordQuery = 'UPDATE user SET hashed_password = ? WHERE id = ?';
+
+    try {
+        const userResults = await new Promise((resolve, reject) => {
+            aid_nexus.query(getUserQuery, [userId], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        if (userResults.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const user = userResults[0];
+        const isMatch = await bcrypt.compare(currentPassword, user.hashed_password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Current password is incorrect' });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        await new Promise((resolve, reject) => {
+            aid_nexus.query(updatePasswordQuery, [hashedNewPassword, userId], (err, results) => {
+                if (err) reject(err);
+                else resolve(results);
+            });
+        });
+
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 
 
