@@ -88,7 +88,7 @@ function App() {
                         <Route path='dashboard' element={<AdminRoute><Dashboard /></AdminRoute>} />
                         <Route path='payments' element={<AdminRoute><Payments /></AdminRoute>} />
                         <Route path='notification' element={<AdminRoute><Notification/></AdminRoute>} />
-                        <Route path='user' element={<AdminRoute><User /></AdminRoute>} />
+                        <Route path='user' element={<User />} />
                         <Route path='funds' element={<DonorRoute><Funds /> </DonorRoute>} />
                         <Route path='/charts' element={<AdminRoute><TrendAnalyzer /></AdminRoute>} />
                         <Route path="/thankyou" element={<DonorRoute><ThankYou /></DonorRoute>} />
