@@ -1,24 +1,60 @@
 import React, { useState } from 'react';
 import Img1 from '../assets/category-images/bg1.jpg'
 import Img2 from '../assets/category-images/don2.png'
-import {useNavigate} from "react-router-dom";
-import {PayPalButtons,usePayPalScriptReducer} from "@paypal/react-paypal-js";
+import { useNavigate } from "react-router-dom";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import PayPalCheckout from "./PayPalCheckout";
-import Stripe from "stripe";
-import {Elements} from "@stripe/react-stripe-js";
-import {CheckoutForm,stripePromise} from "./CheckoutForm";
-
+import { Elements } from "@stripe/react-stripe-js";
+import { CheckoutForm, stripePromise } from "./CheckoutForm";
+import axios from 'axios';
 
 const Funds = () => {
     const [card, setCard] = useState(true);
     const [donationAmount, setDonationAmount] = useState(2);
-    const[{options,isPending},dispatch] = usePayPalScriptReducer();
+    const [{options, isPending}, dispatch] = usePayPalScriptReducer();
     const navigate = useNavigate();
+
+    const recordDonation = async (amount, transactionId) => {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+            console.error('User ID not available');
+            return;
+        }
+
+        try {
+            console.log('Recording donation', { amount, userId, transactionId });
+            const response = await axios.post('http://localhost:5000/api/record-donation', {
+                donationAmount: amount,
+                userId,
+                transactionId
+            });
+            console.log('Donation recording response:', response.data);
+            if (response.data.success) {
+                navigate('/thankyou', { state: { donationAmount: amount } });
+            } else {
+                console.error('Failed to record donation:', response.data.error);
+            }
+        } catch (error) {
+            console.error('Error recording donation:', error.response?.data || error.message);
+        }
+    };
+
+
+    const handleStripeSuccess = (paymentIntent) => {
+        recordDonation(donationAmount, paymentIntent.id);
+    };
+
+    const handlePayPalSuccess = (details, data) => {
+        console.log('PayPal transaction completed successfully', details);
+        const amount = details.purchase_units[0].amount.value;
+        const transactionId = details.id;
+        recordDonation(amount, transactionId);
+    };
 
     return (
         <div>
             <h1 className="text-grey-darker text-5xl text-center mt-10 mb-8">Transform Funds with <span className='text-orange-500'>AidNexus!</span></h1>
-        
+
             <section className="antialiased text-gray-600 ml-16 min-h-screen p-4">
                 <div className="h-full flex flex-collg:flex-row">
                     <div className="lg:w-2/3">
@@ -67,8 +103,11 @@ const Funds = () => {
                                 </div>
 
                                 {card ? (
-                                    <Elements stripe={ stripePromise}>
-                                        <CheckoutForm donationAmount={donationAmount}/>
+                                    <Elements stripe={stripePromise}>
+                                        <CheckoutForm
+                                            donationAmount={donationAmount}
+                                            onSuccess={handleStripeSuccess}
+                                        />
                                     </Elements>
                                 ) : (
                                     <div>
@@ -82,10 +121,11 @@ const Funds = () => {
                                                 type="number"
                                                 placeholder="Amount To Donate"
                                                 value={donationAmount}
-                                                onChange={(e) => setDonationAmount(parseFloat(e.target.value))}/>
+                                                onChange={(e) => setDonationAmount(parseFloat(e.target.value))}
+                                            />
                                         </div>
                                         <br/>
-                                            <PayPalCheckout donationAmount={donationAmount} />
+                                        <PayPalCheckout donationAmount={donationAmount} onSuccess={handlePayPalSuccess} />
                                     </div>
                                 )}
                             </div>
