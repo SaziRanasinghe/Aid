@@ -279,7 +279,133 @@ app.post('/api/donate_items', upload.single('image'), (req, res) => {
     });
 });
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.get('/api/items', (req, res) => {
+    const { category, search, sort } = req.query;
 
+    let whereClause = 'WHERE di.is_active = 1';
+    let orderClause = '';
+    const params = [];
+
+    if (category) {
+        whereClause += ' AND di.category_id = ?';
+        params.push(category);
+    }
+
+    if (search) {
+        whereClause += ' AND (di.title LIKE ? OR di.description LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`);
+    }
+
+    switch (sort) {
+        case 'newest':
+            orderClause = 'ORDER BY di.id DESC';
+            break;
+        case 'oldest':
+            orderClause = 'ORDER BY di.id ASC';
+            break;
+        default:
+            orderClause = 'ORDER BY di.id DESC'; // Default to newest
+    }
+
+    const query = `
+        SELECT di.id, di.title, di.description, di.location, di.condition, 
+               CONCAT('/uploads/', di.image) as image_url,
+               di.category_id, u.name as donor_name
+        FROM donate_items di
+        JOIN user u ON di.user_id = u.id
+        ${whereClause}
+        ${orderClause}
+        LIMIT 20
+    `;
+
+    aid_nexus.query(query, params, (err, results) => {
+        if (err) {
+            console.error('Error fetching items:', err);
+            res.status(500).json({ error: 'Database error' });
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+
+app.post('/api/claim', (req, res) => {
+    const { itemId, userId } = req.body;
+
+    if (!itemId || !userId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const getReceiverIdQuery = `
+        SELECT receiver_id FROM receiver WHERE user_id = ?
+    `;
+
+    const claimQuery = `
+        INSERT INTO receiving_item_table (item_id, receiver_id)
+        VALUES (?, ?)
+    `;
+
+    const updateItemQuery = `
+        UPDATE donate_items
+        SET is_active = 0
+        WHERE id = ?
+    `;
+
+    aid_nexus.beginTransaction((err) => {
+        if (err) {
+            console.error('Error starting transaction:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        // First, get the receiver_id
+        aid_nexus.query(getReceiverIdQuery, [userId], (err, receiverResult) => {
+            if (err) {
+                console.error('Error getting receiver_id:', err);
+                return aid_nexus.rollback(() => {
+                    res.status(500).json({ error: 'Database error' });
+                });
+            }
+
+            if (receiverResult.length === 0) {
+                return aid_nexus.rollback(() => {
+                    res.status(404).json({ error: 'Receiver not found for this user' });
+                });
+            }
+
+            const receiverId = receiverResult[0].receiver_id;
+
+            // Now proceed with the claim
+            aid_nexus.query(claimQuery, [itemId, receiverId], (err, result) => {
+                if (err) {
+                    console.error('Error inserting claim:', err);
+                    return aid_nexus.rollback(() => {
+                        res.status(500).json({ error: 'Database error' });
+                    });
+                }
+
+                aid_nexus.query(updateItemQuery, [itemId], (err, result) => {
+                    if (err) {
+                        console.error('Error updating item status:', err);
+                        return aid_nexus.rollback(() => {
+                            res.status(500).json({ error: 'Database error' });
+                        });
+                    }
+
+                    aid_nexus.commit((err) => {
+                        if (err) {
+                            console.error('Error committing transaction:', err);
+                            return aid_nexus.rollback(() => {
+                                res.status(500).json({ error: 'Database error' });
+                            });
+                        }
+                        res.json({ message: 'Item claimed successfully' });
+                    });
+                });
+            });
+        });
+    });
+});
 
 // GET endpoint for retrieving events
 createGetEndpoint(
