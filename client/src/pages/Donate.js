@@ -64,24 +64,26 @@ function Donate() {
     setFormData({ ...formData, image: event.target.files[0] });
   };
 
-  const handleSubmit = async(event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
     const submitData = new FormData();
-
     Object.keys(formData).forEach((key) => {
       submitData.append(key, formData[key]);
     });
+    const userId = localStorage.getItem('userId')
+    submitData.append('user_id', userId);
+
     try {
-      const response = await axios.post('http://localhost:5000/api/submit', submitData, {
+      const response = await axios.post('http://localhost:5000/api/donate_items', submitData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      console.log('Form submitted successfully:', response.data);
+      console.log('Donation submitted successfully:', response.data);
+      handleClose();
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error('Error submitting donation:', error);
     }
   };
 
