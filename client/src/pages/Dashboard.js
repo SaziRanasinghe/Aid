@@ -1,19 +1,62 @@
- // src/App.js
- import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
 import { FaEye, FaTrash, FaUsers, FaBuffer } from 'react-icons/fa';
- import DashboardCard from "./DashBoardCards";
+import DashboardCard from "./DashBoardCards";
+import axios from 'axios';
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale);
 
 function App() {
-  const data = {
-    labels: ["January", "February", "March", "April", "May", "June", "July"],
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    fundBalance: 0,
+    donors: 0,
+    volunteers: 0
+  });
+
+  const [monthlyDonations, setMonthlyDonations] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    event_name: '',
+    event_description: '',
+    event_datetime: '',
+    active: 'yes'
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersRes, balanceRes, donorsRes, volunteersRes, donationsRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/total-users'),
+          axios.get('http://localhost:5000/api/fund-balance'),
+          axios.get('http://localhost:5000/api/donors'),
+          axios.get('http://localhost:5000/api/volunteers'),
+          axios.get('http://localhost:5000/api/monthly-donations')
+        ]);
+
+        setMetrics({
+          totalUsers: usersRes.data[0].count,
+          fundBalance: balanceRes.data[0].balance,
+          donors: donorsRes.data[0].count,
+          volunteers: volunteersRes.data[0].count
+        });
+
+        setMonthlyDonations(donationsRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const chartData = {
+    labels: monthlyDonations.map(item => item.month),
     datasets: [
       {
-        label: "Sales",
-        data: [65, 59, 80, 81, 56, 55, 40],
+        label: "Monthly Donations",
+        data: monthlyDonations.map(item => item.total_amount),
         fill: false,
         backgroundColor: "rgba(75,192,192,0.4)",
         borderColor: "rgba(75,192,192,1)",
@@ -22,66 +65,33 @@ function App() {
     ],
   };
 
-  const [metrics,setMetrics] = React.useState({
-    totalUsers : 0,
-    fundBalance : 0,
-    donor : 0,
-    volunteers : 0
-  });
-
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const [usersRes, balanceRes, donorsRes, volunteersRes] = await Promise.all([
-          fetch('http://localhost:5000/api/total-users'),
-          fetch('http://localhost:5000/api/fund-balance'),
-          fetch('http://localhost:5000/api/donors'),
-          fetch('http://localhost:5000/api/volunteers')
-        ]);
-
-        const [usersData, balanceData, donorsData, volunteersData] = await Promise.all([
-          usersRes.json(),
-          balanceRes.json(),
-          donorsRes.json(),
-          volunteersRes.json()
-        ]);
-
-        setMetrics({
-          totalUsers: usersData[0].count,
-          fundBalance: balanceData[0].balance,
-          donors: donorsData[0].count,
-          volunteers: volunteersData[0].count
-        });
-      } catch (error) {
-        console.error('Error fetching metrics:', error);
-      }
-    };
-
-    fetchMetrics();
-  }, []);
-
-
   const options = {
     responsive: true,
     plugins: {
       legend: {
         position: "top",
       },
-    
+      title: {
+        display: true,
+        text: "Monthly Donation Trends"
+      }
     },
     scales: {
       y: {
         beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Donation Amount ($)'
+        }
       },
+      x: {
+        title: {
+          display: true,
+          text: 'Month'
+        }
+      }
     },
   };
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    event_name: '',
-    event_description: '',
-    event_datetime: '',
-    active: 'yes'
-  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -101,8 +111,9 @@ function App() {
   const toggleDialog = () => {
     setIsDialogOpen(!isDialogOpen);
   };
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 mb-5">
     {/* Sidebar */}
     <aside className="w-64 bg-blue-950 text-gray-100 flex flex-col">
       <div className="py-8 px-6 text-2xl font-bold text-orange-400">Admin Page</div>
@@ -286,7 +297,7 @@ function App() {
           />
           <DashboardCard
               title="Fund Balance"
-              value={`Rs. ${metrics.fundBalance}`}
+              value={`$ ${metrics.fundBalance}`}
               gradient="from-green-500 to-teal-500"
           />
           <DashboardCard
@@ -304,87 +315,14 @@ function App() {
 
         {/* Chart Section */}
         <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
-          
-          <h2 className="text-2xl font-bold mb-4 text-black">Perfomance</h2>
+          <h2 className="text-2xl font-bold mb-4 text-black">Monthly Donation Trends</h2>
           <div className="chart-area">
             <div className="h-full">
-              <Line data={data} options={options} />
+              <Line data={chartData} options={options}/>
             </div>
           </div>
         </div>
       </main>
-
-      <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-6">
-        <div className="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0">
-          <div className="flex items-center">
-            <FaBuffer className="text-blue-600 text-lg mr-2" />
-            <b className="text-blue-800">Responsive table</b>
-          </div>
-          <button type="button" className="bg-blue-500 text-white px-4 py-2 rounded">
-            Dismiss
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white shadow-md rounded-lg">
-        <header className="flex items-center justify-between p-4 border-b">
-          <p className="flex items-center text-black text-lg font-semibold">
-            <FaUsers className="mr-2" />
-            Users
-          </p>
-          
-        </header>
-        <div className="p-4">
-          <table className="min-w-full divide-y divide-gray-200 text-black">
-            <thead className="bg-gray-50">
-              <tr>
-                <th>No.</th>
-                <th>Name</th>
-                <th>Amount of Fund</th>
-                <th>City</th>
-                <th>Progress</th>
-                <th>Created</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {/* Repeat this row for each client */}
-              <tr>
-                <td className="p-2">
-                  <img src="https://avatars.dicebear.com/v2/initials/rebecca-bauch.svg" alt="Client" className="w-10 h-10 rounded-full" />
-                </td>
-                <td>Nimal Perera</td>
-                <td>Rs.5000</td>
-                <td>Colombo</td>
-                <td>
-                  <progress max="100" value="79" className="w-full"></progress>
-                </td>
-                <td>
-                  <small className="text-gray-500" title="Oct 25, 2021">Oct 25, 2021</small>
-                </td>
-                <td className="flex space-x-2">
-                  <button className="bg-blue-500 text-white px-2 py-1 rounded">
-                    <FaEye />
-                  </button>
-                  <button className="bg-red-500 text-white px-2 py-1 rounded">
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-              {/* End row */}
-            </tbody>
-          </table>
-          <div className="flex items-center text-black justify-between mt-4">
-            <div className="flex space-x-2">
-              <button type="button" className="bg-gray-200 px-4 py-2 rounded">1</button>
-              <button type="button" className="bg-gray-200 px-4 py-2 rounded">2</button>
-              <button type="button" className="bg-gray-200 px-4 py-2 rounded">3</button>
-            </div>
-            <small>Page 1 of 3</small>
-          </div>
-        </div>
-
-      </div>
     </div>
   </div>
 );
