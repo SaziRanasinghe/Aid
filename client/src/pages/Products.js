@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ProductContainer from './ProductContainer';
 
 function Products() {
@@ -22,13 +24,14 @@ function Products() {
             setItems(response.data);
         } catch (error) {
             console.error('Error fetching items:', error);
+            toast.error('Failed to fetch items. Please try again later.');
         }
     };
 
     const handleClaim = async (itemId) => {
         const userId = localStorage.getItem('userId');
         if (!userId) {
-            alert('You must be logged in to claim an item.');
+            toast.error('You must be logged in to claim an item.');
             return;
         }
 
@@ -38,13 +41,13 @@ function Products() {
                 userId: userId
             });
             fetchItems(); // Refresh the items list
-            alert(response.data.message);
+            toast.success(response.data.message);
         } catch (error) {
             console.error('Error claiming item:', error);
             if (error.response && error.response.data && error.response.data.error) {
-                alert(`Failed to claim item: ${error.response.data.error}`);
+                toast.error(`Failed to claim item: ${error.response.data.error}`);
             } else {
-                alert('Failed to claim item. Please try again.');
+                toast.error('Failed to claim item. Please try again.');
             }
         }
     };
@@ -55,6 +58,7 @@ function Products() {
             setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);
+            toast.error('Failed to fetch categories. Please try again later.');
         }
     };
 
@@ -73,9 +77,9 @@ function Products() {
     useEffect(() => {
         fetchItems();
     }, [selectedCategory, searchTerm, sortBy]);
-
     return (
         <div className="flex flex-col w-screen min-h-screen p-10 bg-gray-100 text-gray-800">
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
             <h1 className="mb-2 font-bold text-orange-600 text-3xl mt-4 text-center md:text-3xl">Donate Items</h1>
 
             {/* Search and filter section */}

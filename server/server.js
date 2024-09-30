@@ -366,16 +366,29 @@ app.post('/api/claim', (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const getUserReceiverQuery = `
+        SELECT receiver_id FROM receiver WHERE user_id = ?
+    `;
+
+    const checkExistingClaimQuery = `
+        SELECT * FROM pending_claims WHERE item_id = ?
+    `;
+
+    const addPendingClaimQuery = `
+        INSERT INTO pending_claims (item_id, receiver_id, claim_time)
+        VALUES (?, ?, NOW())
+    `;
+
     const getEligibleReceiversQuery = `
-        SELECT r.receiver_id, r.monthly_income, r.monthly_expenses, r.house_ownership, r.employment_status,
+        SELECT r.receiver_id, r.user_id, r.monthly_income, r.monthly_expenses, r.house_ownership, r.employment_status,
                COUNT(rit.receive_id) as items_received
         FROM receiver r
         LEFT JOIN receiving_item_table rit ON r.receiver_id = rit.receiver_id
-        WHERE r.user_id != ?
+        WHERE r.receiver_id != ?
         GROUP BY r.receiver_id
     `;
 
-    const claimQuery = `
+    const finalizeClaimQuery = `
         INSERT INTO receiving_item_table (item_id, receiver_id)
         VALUES (?, ?)
     `;
@@ -386,62 +399,108 @@ app.post('/api/claim', (req, res) => {
         WHERE id = ?
     `;
 
+    const deletePendingClaimsQuery = `
+        DELETE FROM pending_claims WHERE item_id = ?
+    `;
+
     aid_nexus.beginTransaction((err) => {
         if (err) {
             console.error('Error starting transaction:', err);
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // Get eligible receivers
-        aid_nexus.query(getEligibleReceiversQuery, [userId], (err, receivers) => {
+        // First, get the receiver_id for the current user
+        aid_nexus.query(getUserReceiverQuery, [userId], (err, userReceiverResult) => {
             if (err) {
-                console.error('Error getting eligible receivers:', err);
+                console.error('Error getting user receiver:', err);
                 return aid_nexus.rollback(() => {
                     res.status(500).json({ error: 'Database error' });
                 });
             }
 
-            if (receivers.length === 0) {
+            if (userReceiverResult.length === 0) {
                 return aid_nexus.rollback(() => {
-                    res.status(404).json({ error: 'No eligible receivers found' });
+                    res.status(404).json({ error: 'User is not registered as a receiver' });
                 });
             }
 
-            // Score and select the best receiver
-            const bestReceiver = selectBestReceiver(receivers);
+            const userReceiverId = userReceiverResult[0].receiver_id;
 
-            // Proceed with the claim for the best receiver
-            aid_nexus.query(claimQuery, [itemId, bestReceiver.receiver_id], (err, result) => {
+            // Check if there's an existing claim for this item
+            aid_nexus.query(checkExistingClaimQuery, [itemId], (err, existingClaimResult) => {
                 if (err) {
-                    console.error('Error inserting claim:', err);
+                    console.error('Error checking existing claim:', err);
                     return aid_nexus.rollback(() => {
                         res.status(500).json({ error: 'Database error' });
                     });
                 }
 
-                aid_nexus.query(updateItemQuery, [itemId], (err, result) => {
-                    if (err) {
-                        console.error('Error updating item status:', err);
-                        return aid_nexus.rollback(() => {
-                            res.status(500).json({ error: 'Database error' });
-                        });
-                    }
-
-                    aid_nexus.commit((err) => {
+                if (existingClaimResult.length === 0) {
+                    // No existing claim, add this user as the first pending claim
+                    aid_nexus.query(addPendingClaimQuery, [itemId, userReceiverId], (err) => {
                         if (err) {
-                            console.error('Error committing transaction:', err);
+                            console.error('Error adding pending claim:', err);
                             return aid_nexus.rollback(() => {
                                 res.status(500).json({ error: 'Database error' });
                             });
                         }
-                        res.json({ message: 'Item claimed successfully', receiver_id: bestReceiver.receiver_id });
+
+                        aid_nexus.commit((err) => {
+                            if (err) {
+                                console.error('Error committing transaction:', err);
+                                return aid_nexus.rollback(() => {
+                                    res.status(500).json({ error: 'Database error' });
+                                });
+                            }
+                            res.json({ message: 'Claim request added. Please wait for confirmation.' });
+                        });
                     });
-                });
+                } else {
+                    // Existing claim found, check if it's more than a day old
+                    const existingClaim = existingClaimResult[0];
+                    const claimTime = new Date(existingClaim.claim_time);
+                    const now = new Date();
+                    const timeDifference = now - claimTime;
+                    const dayInMilliseconds = 24 * 60 * 60 * 1000;
+
+                    if (timeDifference > dayInMilliseconds) {
+                        // More than a day has passed, give the item to the first claimer
+                        finalizeClaim(existingClaim.receiver_id, itemId, res, aid_nexus);
+                    } else {
+                        // Less than a day has passed, add this user to the list and select the best receiver
+                        aid_nexus.query(addPendingClaimQuery, [itemId, userReceiverId], (err) => {
+                            if (err) {
+                                console.error('Error adding pending claim:', err);
+                                return aid_nexus.rollback(() => {
+                                    res.status(500).json({ error: 'Database error' });
+                                });
+                            }
+
+                            // Get all eligible receivers
+                            aid_nexus.query(getEligibleReceiversQuery, [userReceiverId], (err, receivers) => {
+                                if (err) {
+                                    console.error('Error getting receivers:', err);
+                                    return aid_nexus.rollback(() => {
+                                        res.status(500).json({ error: 'Database error' });
+                                    });
+                                }
+
+                                if (receivers.length === 0) {
+                                    return aid_nexus.rollback(() => {
+                                        res.status(404).json({ error: 'No eligible receivers found' });
+                                    });
+                                }
+
+                                const bestReceiver = selectBestReceiver(receivers);
+                                finalizeClaim(bestReceiver.receiver_id, itemId, res, aid_nexus);
+                            });
+                        });
+                    }
+                }
             });
         });
     });
 });
-
 
 // GET endpoint for retrieving events
 createGetEndpoint(
@@ -872,6 +931,60 @@ app.put('/api/user/change-password/:userId', async (req, res) => {
 
 
 // function to select best reciever
+function finalizeClaim(receiverId, itemId, res, aid_nexus) {
+    const finalizeClaimQuery = `
+        INSERT INTO receiving_item_table (item_id, receiver_id)
+        VALUES (?, ?)
+    `;
+
+    const updateItemQuery = `
+        UPDATE donate_items
+        SET is_active = 0
+        WHERE id = ?
+    `;
+
+    const deletePendingClaimsQuery = `
+        DELETE FROM pending_claims WHERE item_id = ?
+    `;
+
+    aid_nexus.query(finalizeClaimQuery, [itemId, receiverId], (err) => {
+        if (err) {
+            console.error('Error finalizing claim:', err);
+            return aid_nexus.rollback(() => {
+                res.status(500).json({ error: 'Database error' });
+            });
+        }
+
+        aid_nexus.query(updateItemQuery, [itemId], (err) => {
+            if (err) {
+                console.error('Error updating item status:', err);
+                return aid_nexus.rollback(() => {
+                    res.status(500).json({ error: 'Database error' });
+                });
+            }
+
+            aid_nexus.query(deletePendingClaimsQuery, [itemId], (err) => {
+                if (err) {
+                    console.error('Error deleting pending claims:', err);
+                    return aid_nexus.rollback(() => {
+                        res.status(500).json({ error: 'Database error' });
+                    });
+                }
+
+                aid_nexus.commit((err) => {
+                    if (err) {
+                        console.error('Error committing transaction:', err);
+                        return aid_nexus.rollback(() => {
+                            res.status(500).json({ error: 'Database error' });
+                        });
+                    }
+                    res.json({ message: 'Item claimed successfully', receiver_id: receiverId });
+                });
+            });
+        });
+    });
+}
+
 function selectBestReceiver(receivers) {
     return receivers.reduce((best, current) => {
         const currentScore = calculateScore(current);
@@ -887,7 +1000,6 @@ function calculateScore(receiver) {
     score += receiver.house_ownership.toLowerCase() === 'rent' ? 50 : 0;
     score += receiver.employment_status.toLowerCase() === 'unemployed' ? 50 : 0;
     score += 100 - Math.min(receiver.items_received * 10, 100);
-
     return score;
 }
 
