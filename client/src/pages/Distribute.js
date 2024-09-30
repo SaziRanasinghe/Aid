@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import distribute from '../assets/main-images/distri.webp';
 
 function Distribute() {
@@ -20,6 +22,7 @@ function Distribute() {
     } catch (err) {
       console.error('Error fetching available items:', err);
       setError('Failed to load available items. Please try again later.');
+      toast.error('Failed to load available items. Please try again later.');
       setIsLoading(false);
     }
   };
@@ -27,7 +30,7 @@ function Distribute() {
   const handleGetPickup = async (itemId) => {
     const userId = localStorage.getItem('userId');
     if (!userId) {
-      alert('You must be logged in to pick up an item.');
+      toast.error('You must be logged in to pick up an item.');
       return;
     }
 
@@ -36,20 +39,21 @@ function Distribute() {
         itemId: itemId,
         userId: userId
       });
-      alert(response.data.message);
+      toast.success(response.data.message);
       fetchAvailableItems(); // Refresh the list of available items
     } catch (error) {
       console.error('Error assigning item:', error);
       if (error.response && error.response.data && error.response.data.error) {
-        alert(`Failed to assign item: ${error.response.data.error}`);
+        toast.error(`Failed to assign item: ${error.response.data.error}`);
       } else {
-        alert('Failed to assign item. Please try again.');
+        toast.error('Failed to assign item. Please try again.');
       }
     }
   };
 
   return (
       <div className="my-4 mx-auto max-w-screen-lg px-4 md:px-8">
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
         <div className="grid gap-8 sm:grid-cols-2 mb-12">
           {/* Content - start */}
           <div className="flex flex-col items-center justify-center sm:items-start md:py-12 lg:py-16">
