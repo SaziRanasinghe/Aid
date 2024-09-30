@@ -9,6 +9,7 @@ import img3 from '../assets/category-images/furniture.png'
 import img4 from '../assets/category-images/medicines.png'
 import img5 from '../assets/category-images/electronic.png'
 import img6 from '../assets/category-images/other.png'
+import {toast, ToastContainer} from "react-toastify";
  
 
 
@@ -82,13 +83,33 @@ function Donate() {
 
       console.log('Donation submitted successfully:', response.data);
       handleClose();
+      toast.success('Donation added successfully! Thank you for your generosity.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     } catch (error) {
       console.error('Error submitting donation:', error);
+      toast.error('Error submitting donation. Please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
 
+
   return (
       <div className="p-20">
+        <ToastContainer/>
         <div className="flex justify-center mb-10">
           <a
               href="#"
