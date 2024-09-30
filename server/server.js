@@ -366,8 +366,13 @@ app.post('/api/claim', (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const getReceiverIdQuery = `
-        SELECT receiver_id FROM receiver WHERE user_id = ?
+    const getEligibleReceiversQuery = `
+        SELECT r.receiver_id, r.monthly_income, r.monthly_expenses, r.house_ownership, r.employment_status,
+               COUNT(rit.receive_id) as items_received
+        FROM receiver r
+        LEFT JOIN receiving_item_table rit ON r.receiver_id = rit.receiver_id
+        WHERE r.user_id != ?
+        GROUP BY r.receiver_id
     `;
 
     const claimQuery = `
@@ -387,25 +392,26 @@ app.post('/api/claim', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // First, get the receiver_id
-        aid_nexus.query(getReceiverIdQuery, [userId], (err, receiverResult) => {
+        // Get eligible receivers
+        aid_nexus.query(getEligibleReceiversQuery, [userId], (err, receivers) => {
             if (err) {
-                console.error('Error getting receiver_id:', err);
+                console.error('Error getting eligible receivers:', err);
                 return aid_nexus.rollback(() => {
                     res.status(500).json({ error: 'Database error' });
                 });
             }
 
-            if (receiverResult.length === 0) {
+            if (receivers.length === 0) {
                 return aid_nexus.rollback(() => {
-                    res.status(404).json({ error: 'Receiver not found for this user' });
+                    res.status(404).json({ error: 'No eligible receivers found' });
                 });
             }
 
-            const receiverId = receiverResult[0].receiver_id;
+            // Score and select the best receiver
+            const bestReceiver = selectBestReceiver(receivers);
 
-            // Now proceed with the claim
-            aid_nexus.query(claimQuery, [itemId, receiverId], (err, result) => {
+            // Proceed with the claim for the best receiver
+            aid_nexus.query(claimQuery, [itemId, bestReceiver.receiver_id], (err, result) => {
                 if (err) {
                     console.error('Error inserting claim:', err);
                     return aid_nexus.rollback(() => {
@@ -428,13 +434,14 @@ app.post('/api/claim', (req, res) => {
                                 res.status(500).json({ error: 'Database error' });
                             });
                         }
-                        res.json({ message: 'Item claimed successfully' });
+                        res.json({ message: 'Item claimed successfully', receiver_id: bestReceiver.receiver_id });
                     });
                 });
             });
         });
     });
 });
+
 
 // GET endpoint for retrieving events
 createGetEndpoint(
@@ -864,7 +871,25 @@ app.put('/api/user/change-password/:userId', async (req, res) => {
 });
 
 
+// function to select best reciever
+function selectBestReceiver(receivers) {
+    return receivers.reduce((best, current) => {
+        const currentScore = calculateScore(current);
+        const bestScore = calculateScore(best);
+        return currentScore > bestScore ? current : best;
+    });
+}
 
+function calculateScore(receiver) {
+    let score = 0;
+    score += 100 - Math.min(parseFloat(receiver.monthly_income) / 100, 100);
+    score += Math.min(parseFloat(receiver.monthly_expenses) / 100, 100);
+    score += receiver.house_ownership.toLowerCase() === 'rent' ? 50 : 0;
+    score += receiver.employment_status.toLowerCase() === 'unemployed' ? 50 : 0;
+    score += 100 - Math.min(receiver.items_received * 10, 100);
+
+    return score;
+}
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
