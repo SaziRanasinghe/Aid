@@ -1,5 +1,6 @@
-import requests
 import sys
+
+import requests
 import mysql.connector
 import pandas as pd
 
@@ -11,10 +12,11 @@ sys.stderr = open(sys.stderr.fileno(), mode='w', encoding='utf-8', buffering=1)
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="1234",
+    password="Sasi@19991120",
     database="aid_nexus"
 )
 cursor = db.cursor()
+
 
 def fetch_aid_data(url, params):
     try:
@@ -31,6 +33,7 @@ def fetch_aid_data(url, params):
         print("Response content:", response.text[:500])
     return None
 
+
 def insert_aid_project(donor, recipient, year, amount):
     query = """INSERT INTO aid_projects
                (donor, recipient, year, amount)
@@ -38,6 +41,7 @@ def insert_aid_project(donor, recipient, year, amount):
     values = (donor, recipient, year, amount)
     cursor.execute(query, values)
     db.commit()
+
 
 # OECD API endpoint for ODA data
 api_url = "https://stats.oecd.org/SDMX-JSON/data/TABLE1/./././"
@@ -54,25 +58,26 @@ data = fetch_aid_data(api_url, params)
 if data and 'data' in data and 'dataSets' in data['data']:
     dataset = data['data']['dataSets'][0]
     series = dataset.get('series', {})
-    
+
     if series:
         for series_key, series_data in series.items():
             indices = series_key.split(':')
             donor = f"Donor_{indices[0]}"
             recipient = f"Recipient_{indices[1]}"
-            
+
             for time_period, values in series_data.get('observations', {}).items():
                 year = 2010 + int(time_period)  # Assuming 'year' as index starting from 2010
                 amount = values[0]
-                
+
                 if amount is not None:
                     insert_aid_project(donor, recipient, year, amount)
-        
+
         print("Data insertion complete.")
     else:
         print("No series data available.")
 else:
     print("No data or unexpected data structure received from API")
+
 
 def get_aid_trends_by_recipient():
     query = """SELECT recipient, SUM(amount) as total_aid, COUNT(DISTINCT year) as year_count
@@ -82,6 +87,7 @@ def get_aid_trends_by_recipient():
     cursor.execute(query)
     return cursor.fetchall()
 
+
 def get_aid_trends_over_time():
     query = """SELECT year, SUM(amount) as total_aid
                FROM aid_projects
@@ -89,6 +95,7 @@ def get_aid_trends_over_time():
                ORDER BY year"""
     cursor.execute(query)
     return cursor.fetchall()
+
 
 def analyze_trends():
     recipient_trends = get_aid_trends_by_recipient()
@@ -115,5 +122,6 @@ def analyze_trends():
     print(top_recipients)
     print("\nYear-over-year aid growth:")
     print(aid_growth)
+
 
 analyze_trends()

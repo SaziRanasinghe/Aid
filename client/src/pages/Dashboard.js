@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, CategoryScale } from "chart.js";
-import { FaEye, FaTrash, FaUsers, FaBuffer } from 'react-icons/fa';
 import DashboardCard from "./DashBoardCards";
 import axios from 'axios';
 
@@ -16,7 +15,10 @@ function App() {
   });
 
   const [monthlyDonations, setMonthlyDonations] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialog1Open, setDialog1Open] = useState(false);
+const [isDialog2Open, setDialog2Open] = useState(false);
+
+
   const [formData, setFormData] = useState({
     event_name: '',
     event_description: '',
@@ -105,12 +107,21 @@ function App() {
     e.preventDefault();
     // Handle form submission logic here
     console.log('Form Data Submitted:', formData);
-    setIsDialogOpen(false); // Close dialog after submission
+    setDialog1Open(false); // Close dialog after submission
   };
 
-  const toggleDialog = () => {
-    setIsDialogOpen(!isDialogOpen);
+  const toggleDialog1 = () => setDialog1Open(!isDialog1Open);
+  const toggleDialog2 = () => setDialog2Open(!isDialog2Open);
+  
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];  
+    setFormData({
+      ...formData,
+      photo: file,  
+    });
   };
+  
 
   return (
     <div className="flex min-h-screen bg-gray-100 mb-5">
@@ -138,26 +149,42 @@ function App() {
             </a>
           </li>
           <li>
-            <a href="#event" onClick={toggleDialog} className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+            <a href="#event" onClick={toggleDialog1} className="flex items-center p-3 rounded-lg hover:bg-gray-700">
               <i className="fas fa-user text-lg"></i>
               <span className="ml-3">Event Form</span>
             </a>
           </li>
-          <li></li>
+
           <li>
-            
+            <a href="#event" onClick={toggleDialog2} className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+              <i className="fas fa-user text-lg"></i>
+              <span className="ml-3">Update Gallery</span>
+            </a>
+          </li>
+          
+          <li>
             <a href="/notification" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
               <i className="fas fa-sign-out-alt text-lg"></i>
               <span className="ml-3">Notifications</span>
             </a>
           </li>
+
+          <li>
+            <a href="/charts" className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+              <i className="fas fa-sign-out-alt text-lg"></i>
+              <span className="ml-3">Trend Analyzer</span>
+            </a>
+          </li>
+
         </ul>
       </nav>
     </aside>
-    {isDialogOpen && (
+     
+
+    {isDialog1Open && (
         <div
           className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
-          onClick={toggleDialog}
+          onClick={toggleDialog1}
         >
           <div
             className="bg-white shadow-2xl m-4 sm:m-8 p-4"
@@ -165,7 +192,7 @@ function App() {
           >
             <div className="flex justify-between items-center border-b pb-2 text-xl">
               <h6 className="text-xl text-black font-bold">Add Event Information</h6>
-              <button type="button" className="text-black" onClick={toggleDialog}>
+              <button type="button" className="text-black" onClick={toggleDialog1}>
                 ✖
               </button>
             </div>
@@ -245,7 +272,79 @@ function App() {
                   <button
                     type="button"
                     className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={toggleDialog}
+                    onClick={toggleDialog1}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* dialog2 */}
+      {isDialog2Open && (
+        <div
+          className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
+          onClick={toggleDialog2}
+        >
+          <div
+            className="bg-white shadow-2xl m-4 sm:m-8 p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b pb-2 text-xl">
+              <h6 className="text-xl text-black font-bold">Add Photos</h6>
+              <button type="button" className="text-black" onClick={toggleDialog2}>
+                ✖
+              </button>
+            </div>
+            <div className="p-2">
+              <form onSubmit={handleFormSubmit}>
+                <div className="mb-4 flex flex-col space-y-4">
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_name">
+                      Event Name
+                    </label>
+                    <input
+                      type="text"
+                      id="event_name"
+                      name="event_name"
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      onChange={handleInputChange}
+                      value={formData.event_name}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="photo">
+                    Upload Photo
+                  </label>
+                  <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    accept="image/*"  
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    onChange={handlePhotoUpload} // New handler for file input change
+                    required
+                  />
+                </div>
+
+      
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onClick={toggleDialog2}
                   >
                     Cancel
                   </button>
