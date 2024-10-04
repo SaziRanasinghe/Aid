@@ -8,13 +8,16 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('userRole');
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
     setIsLoggedIn(!!token);
     setUserRole(role);
+    setIsAdmin(adminStatus);
   }, []);
 
   const toggleMenu = () => {
@@ -28,8 +31,13 @@ export default function Header() {
     localStorage.removeItem('userId');
     setIsLoggedIn(false);
     setUserRole(null);
+    setIsAdmin(false);
     navigate('/login');
   };
+
+  if (isLoggedIn && isAdmin) {
+    return null; // Return null to hide the header for admin users
+  }
 
   return (
       <div className='md:static justify-between md:min-h-fit min-h-[30vh] left-0 top-[-9%] flex items-center mt-2 w-full px-5 bg-gray-700/80'>
@@ -66,7 +74,6 @@ export default function Header() {
           }
           <li>
             {isLoggedIn ? (
-
                 <button
                     onClick={handleLogout}
                     className="p-4 text-white bg-red-500 hover:bg-red-400 focus:ring-4 focus:outline-none focus:ring-[red]/90 font-medium rounded-lg text-m px-8 py-1.5 text-center inline-flex items-center dark:focus:ring-[#4285F4]/55 me-2 mb-2"
