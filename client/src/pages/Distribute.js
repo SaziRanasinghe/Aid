@@ -20,7 +20,8 @@ function Distribute() {
       setAvailableItems(response.data);
       setIsLoading(false);
     } catch (err) {
-      console.error('Error fetching available items:', err);
+      console.error('Error fetching available itecd server' +
+          'ms:', err);
       setError('Failed to load available items. Please try again later.');
       toast.error('Failed to load available items. Please try again later.');
       setIsLoading(false);

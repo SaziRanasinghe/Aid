@@ -24,7 +24,7 @@ app.use(cors({
 }));
 
 
-// File Uploading
+// File Uploading for user imager
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
@@ -35,6 +35,11 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({storage: storage});
+
+
+
+
+
 
 //****************************************Authentication Middleware*************************************************************//
 const authMiddleware = (req, res, next) => {
@@ -927,6 +932,45 @@ app.put('/api/user/change-password/:userId', async (req, res) => {
         console.error('Error changing password:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
+});
+
+// Upload gallery API endpoint
+app.post('/api/admin/upload', upload.single('photo'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const { event_name, description } = req.body;
+    const image_link = `/uploads/${req.file.filename}`;
+
+    const sqlQuery = 'INSERT INTO gallery (event_name, image_link, description) VALUES (?, ?, ?)';
+    const params = [event_name, image_link, description];
+
+    aid_nexus.query(sqlQuery, params, (err, result) => {
+        if (err) {
+            console.error('Error uploading image:', err);
+            res.status(500).json({ message: 'Error uploading image' });
+            return;
+        }
+        res.status(201).json({ message: 'Image uploaded successfully', id: result.insertId });
+    });
+});
+
+app.get('/api/gallery-items', (req, res) => {
+    let sql = 'SELECT * FROM gallery';
+    aid_nexus.query(sql, (err, results) => {
+        if (err) throw err;
+        res.json(results);
+    });
+});
+
+// GET a single gallery item
+app.get('/api/gallery-items/:id', (req, res) => {
+    let sql = `SELECT * FROM gallery WHERE id = ${req.params.id}`;
+    aid_nexus.query(sql, (err, result) => {
+        if (err) throw err;
+        res.json(result[0]);
+    });
 });
 
 

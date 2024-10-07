@@ -4,6 +4,9 @@ import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, Catego
 import DashboardCard from "./DashBoardCards";
 import axios from 'axios';
 import {useNavigate} from "react-router-dom";
+import GalleryUpload from "./GalleryUpload";
+import {ToastContainer,toast} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(LineElement, PointElement, LinearScale, Title, CategoryScale);
 
@@ -18,14 +21,14 @@ function App() {
   const navigate = useNavigate();
   const [monthlyDonations, setMonthlyDonations] = useState([]);
   const [isDialog1Open, setDialog1Open] = useState(false);
-  const [isDialog2Open, setDialog2Open] = useState(false);
+  const [isGalleryUploadOpen, setIsGalleryUploadOpen] = useState(false);
+
 
 
   const [formData, setFormData] = useState({
     event_name: '',
-    event_description: '',
-    event_datetime: '',
-    active: 'yes'
+    description: '',
+    photo: null
   });
 
   const handleLogout = () => {
@@ -104,34 +107,43 @@ function App() {
     },
   };
 
+
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prevState => ({
+      ...prevState,
       [name]: value
-    });
+    }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handlePhotoUpload = (e) => {
+    setFormData(prevState => ({
+      ...prevState,
+      photo: e.target.files[0]
+    }));
+  };
+
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form Data Submitted:', formData);
-    setDialog1Open(false); // Close dialog after submission
+
+    const data = new FormData();
+    data.append('event_name', formData.event_name);
+    data.append('description', formData.description);
+    data.append('photo', formData.photo);
+
+    try {
+      const response = await axios.post('/api/admin/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      console.log('Upload successful:', response.data);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   };
 
   const toggleDialog1 = () => setDialog1Open(!isDialog1Open);
-  const toggleDialog2 = () => setDialog2Open(!isDialog2Open);
-  
-
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];  
-    setFormData({
-      ...formData,
-      photo: file,  
-    });
-  };
-  
-
+  const toggleGalleryUpload = () => setIsGalleryUploadOpen(!isGalleryUploadOpen);
   return (
       <div className="flex min-h-screen bg-gray-100 mb-5">
         {/* Sidebar */}
@@ -158,7 +170,7 @@ function App() {
                 </a>
               </li>
               <li>
-                <a href="#event" onClick={toggleDialog2} className="flex items-center p-3 rounded-lg hover:bg-gray-700">
+                <a href="#event" onClick={toggleGalleryUpload} className="flex items-center p-3 rounded-lg hover:bg-gray-700">
                   <i className="fas fa-images text-lg"></i>
                   <span className="ml-3">Update Gallery</span>
                 </a>
@@ -288,77 +300,7 @@ function App() {
             </div>
         )}
 
-        {/* dialog2 */}
-        {isDialog2Open && (
-            <div
-                className="fixed inset-0 z-10 flex items-center justify-center mt-2 overflow-auto bg-black bg-opacity-50"
-                onClick={toggleDialog2}
-            >
-              <div
-                  className="bg-white shadow-2xl m-4 sm:m-8 p-4"
-                  onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center border-b pb-2 text-xl">
-                  <h6 className="text-xl text-black font-bold">Add Photos</h6>
-                  <button type="button" className="text-black" onClick={toggleDialog2}>
-                    ✖
-                  </button>
-                </div>
-                <div className="p-2">
-                  <form onSubmit={handleFormSubmit}>
-                    <div className="mb-4 flex flex-col space-y-4">
-                      <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="event_name">
-                          Event Name
-                        </label>
-                        <input
-                            type="text"
-                            id="event_name"
-                            name="event_name"
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            onChange={handleInputChange}
-                            value={formData.event_name}
-                            required
-                        />
-                      </div>
-                      <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="photo">
-                          Upload Photo
-                        </label>
-                        <input
-                            type="file"
-                            id="photo"
-                            name="photo"
-                            accept="image/*"
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            onChange={handlePhotoUpload} // New handler for file input change
-                            required
-                        />
-                      </div>
-
-
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <button
-                          type="submit"
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      >
-                        Submit
-                      </button>
-                      <button
-                          type="button"
-                          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                          onClick={toggleDialog2}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-        )}
+        <GalleryUpload isOpen={isGalleryUploadOpen} onClose={toggleGalleryUpload} />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
@@ -384,13 +326,6 @@ function App() {
               </div>
             </div>
           </header>
-
-          {/* Breadcrumb */}
-          <div className="bg-gray-200 py-2 px-6 text-sm">
-            <p className="text-gray-600">
-              Dashboard / <span className="text-blue-600">Home</span>
-            </p>
-          </div>
 
           {/* Dashboard Cards */}
           <main className="flex-1 p-6">
@@ -428,6 +363,7 @@ function App() {
               </div>
             </div>
           </main>
+          <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
         </div>
       </div>
   );
