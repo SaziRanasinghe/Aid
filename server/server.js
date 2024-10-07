@@ -61,28 +61,45 @@ const authMiddleware = (req, res, next) => {
 // ***************************************************Event***************************************************************
 
 // POST endpoint for adding an event
-createPostEndpoint(
-    app,
-    '/api/events',
-    'INSERT INTO event (event_name, event_description, event_datetime, is_event_active) VALUES (?, ?, ?, ?)',
-    ['event_name', 'event_description', 'event_datetime', 'active'],
-    "Event Is Successfully Registered",
-);
+app.get('/api/events', (req, res) => {
+    let sql = 'SELECT * FROM events';
+    aid_nexus.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching events:', err);
+            return res.status(500).json({ message: 'Error fetching events' });
+        }
+        res.json(results);
+    });
+});
 
-// GET endpoint for retrieving events
-createGetEndpoint(
-    app,
-    '/api/events',
-    'SELECT * FROM event'
-);
+// POST request to create a new event
+app.post('/api/admin/create-event', upload.single('photo'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
 
-// GET endpoint for retrieving a specific event
-createGetEndpoint(
-    app,
-    '/api/events/:id',
-    'SELECT * FROM event WHERE event_id = ?',
-    ['id']
-);
+    const { event_name, description, event_date, event_time, active } = req.body;
+    const image_link = `/uploads/${req.file.filename}`;
+
+    // Check if all required fields are present
+    if (!event_name || !description || !event_date || !event_time) {
+        return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const sqlQuery = 'INSERT INTO events (event_name, image_link, description, event_date, event_time, active) VALUES (?, ?, ?, ?, ?, ?)';
+    const params = [event_name, image_link, description, event_date, event_time, active || 'yes'];
+
+    aid_nexus.query(sqlQuery, params, (err, result) => {
+        if (err) {
+            console.error('Error creating event:', err);
+            res.status(500).json({ message: 'Error creating event' });
+            return;
+        }
+        res.status(201).json({ message: 'Event created successfully', id: result.insertId });
+    });
+});
+
+
 
 // POST endpoint for adding a donation
 createPostEndpoint(

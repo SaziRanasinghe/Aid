@@ -1,110 +1,62 @@
-// import React from 'react'
-import img1 from '../assets/gallery-images/donation 1.jpg'
-import img2 from '../assets/gallery-images/donation 3.webp'
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-
+import EventContainer from './EventContainer';
 
 function Events() {
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchEvents = async () => {
-        try {
-            const response = await axios.get('/api/events');
-            setEvents(response.data);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        }
+      try {
+        const response = await axios.get('http://localhost:5000/api/events');
+        setEvents(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setError('Oops! We encountered a hiccup while fetching the events. Please try again later.');
+        setLoading(false);
+      }
     };
     fetchEvents();
-}, []);
+  }, []);
+
+  const currentDate = new Date();
+
+  const filteredEvents = events.filter(event => {
+    const eventDateTime = new Date(event.event_date + 'T' + event.event_time);
+    return eventDateTime > currentDate && event.active === 'yes';
+  });
+
+  const NoEventsMessage = () => (
+      <div className="text-center py-12 bg-white rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold text-gray-700 mb-4">No Upcoming Events Found</h2>
+        <p className="text-lg text-gray-600 mb-6">
+          Don't worry, we're cooking up some amazing events behind the scenes!
+        </p>
+        <p className="text-md text-gray-500">
+          In the meantime, why not check out our past events or sign up for our newsletter to stay updated?
+        </p>
+      </div>
+  );
+
+  if (loading) return <div className="text-center py-12">Loading events...</div>;
+  if (error) return <div className="text-center py-12 text-red-500">{error}</div>;
+
   return (
-    <div className="mx-4 my-8">
-      <div className="flex flex-col space-y-8">
-        <div className="card flex flex-col sm:flex-row md:flex-row bg-gray-800">
-          <div className="sm:flex-shrink-0 md:flex-shrink-0">
-            <img className="imagine w-full sm:w-56 md:w-56 lg:w-80" src={img1} alt="Event" />
-          </div>
-          <div className="righty ml-3 md:mt-0 md:ml-6 sm:ml-3">
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <div className="text-orange-400 mt-2 mb-4 uppercase tracking-wide text-xl font-bold cardheading cardtitle">SISU UPAKARA</div>
-                <div className="text-gray-100 mb-4 uppercase tracking-wide text-lg font-bold cardheading">
-                  <small className="text-gray-200 mb-1 uppercase tracking-wide cardheading">Time- 7:00am - 10:00am</small><br />
-                  <small className="text-gray-200 mb-1 uppercase tracking-wide cardheading">Date- OCT 18</small>
-                </div>
-              </div>
-            </div>
-            <div className="block mt-1 mr-6 text-lg md:w-3/4 lg:w-3/4 leading-tight font-semibold text-gray-200 hover:underline">Helping for financial difficulties</div>
-            <p className="mb-2 mt-2 mr-6 text-gray-300 md:w-3/4 lg:w-3/4">Although we face constraints such as limited resources for outreach and technical development, the dedication and collaboration of our stakeholders empower us to overcome these challenges. Together, we strive to create a lasting positive impact, fostering a more sustainable, equitable, and compassionate society.</p>
-            <div className="flex justify-end h-16 mb-2">
-            <Link to='/funds'>
-              <a className="tickets bg-transparent uppercase hover:bg-orange-500 text-gray-100 font-semibold hover:text-black py-2 px-4 border-2 border-orange-500 hover:border-transparent mb-2 mr-4">
-                Donate
-              </a></Link>
-            </div>
-          </div>
-        </div>
-        
-        <div className="card flex flex-col sm:flex-row md:flex-row bg-gray-800">
-          <div className="sm:flex-shrink-0 md:flex-shrink-0">
-            <img className="imagine w-full sm:w-56 md:w-56 lg:w-80" src={img2} alt="Event" />
-          </div>
-          <div className="righty ml-3 md:mt-0 md:ml-6 sm:ml-3">
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <div className="text-orange-400 mt-2 mb-4 uppercase tracking-wide text-xl font-bold cardheading cardtitle">GAMATA DIRIYA</div>
-                <div className="text-gray-100 mb-4 uppercase tracking-wide text-lg font-bold cardheading">
-                  <small className="text-gray-200 mb-1 uppercase tracking-wide cardheading">Time- 10:00am - 2:00am</small><br />
-                  <small className="text-gray-200 mb-1 uppercase tracking-wide cardheading">Date- NOV 20</small>
-                </div>
-              </div>
-            </div>
-            <div className="block mt-1 mr-6 text-lg md:w-3/4 lg:w-3/4 leading-tight font-semibold text-gray-200 hover:underline">Helping for financial difficulties</div>
-            <p className="mb-2 mt-2 mr-6 text-gray-300 md:w-3/4 lg:w-3/4">Although we face constraints such as limited resources for outreach and technical development, the dedication and collaboration of our stakeholders empower us to overcome these challenges. Together, we strive to create a lasting positive impact, fostering a more sustainable, equitable, and compassionate society.</p>
-            <div className="flex justify-end h-16 mb-2">
-            <Link to='/funds'>
-              <a className="tickets bg-transparent uppercase hover:bg-orange-500 text-gray-100 font-semibold hover:text-black py-2 px-4 border-2 border-orange-500 hover:border-transparent mb-2 mr-4">
-                Donate
-              </a></Link>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 my-8">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Upcoming Events</h1>
+        <div className="space-y-8">
+          {filteredEvents.length > 0 ? (
+              filteredEvents.map(event => <EventContainer key={event.id} event={event} />)
+          ) : (
+              <NoEventsMessage />
+          )}
         </div>
       </div>
-     
- 
+  );
+}
 
+export default Events;
 
- 
-        <h1>Events</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Date & Time</th>
-                    <th>Active</th>
-                </tr>
-            </thead>
-            <tbody>
-                {events.map(event => (
-                    <tr key={event.event_id}>
-                        <td>{event.event_id}</td>
-                        <td>{event.event_name}</td>
-                        <td>{event.event_description}</td>
-                        <td>{event.event_datetime}</td>
-                        <td>{event.is_event_active ? 'Yes' : 'No'}</td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-    );
-  };
-  
-  export default Events;
-  
- 
