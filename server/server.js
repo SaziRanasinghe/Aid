@@ -62,13 +62,24 @@ const authMiddleware = (req, res, next) => {
 
 // POST endpoint for adding an event
 app.get('/api/events', (req, res) => {
-    let sql = 'SELECT * FROM events';
-    aid_nexus.query(sql, (err, results) => {
+    const query = `
+        SELECT *
+        FROM events
+        ORDER BY event_date DESC, event_time DESC
+    `;
+
+    aid_nexus.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching events:', err);
             return res.status(500).json({ message: 'Error fetching events' });
         }
-        res.json(results);
+
+        const events = results.map(event => ({
+            ...event,
+            is_past: new Date(`${event.event_date}T${event.event_time}`) < new Date()
+        }));
+
+        res.json(events);
     });
 });
 
