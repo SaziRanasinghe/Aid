@@ -58,7 +58,7 @@ function Distribute() {
           {/* Content - start */}
           <div className="flex flex-col items-center justify-center sm:items-start md:py-12 lg:py-16">
             <h1 className='text-5xl font-bold'> Free Transport with <span className='text-orange-600'>AidNexus</span></h1><br/>
-            <p className="text-gray-700 mb-5">
+            <p className="text-gray-200 mb-5">
               Take advantage of free transportation when you donate through AidNexus. Your generosity is made easier with our hassle-free service, ensuring your donations reach those in need without any extra cost to you. Join us in making a difference today!
             </p>
           </div>
