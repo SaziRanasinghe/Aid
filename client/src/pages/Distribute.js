@@ -20,8 +20,7 @@ function Distribute() {
       setAvailableItems(response.data);
       setIsLoading(false);
     } catch (err) {
-      console.error('Error fetching available itecd server' +
-          'ms:', err);
+      console.error('Error fetching available items:', err);
       setError('Failed to load available items. Please try again later.');
       toast.error('Failed to load available items. Please try again later.');
       setIsLoading(false);
@@ -41,6 +40,20 @@ function Distribute() {
         userId: userId
       });
       toast.success(response.data.message);
+
+      // Display donor and receiver information
+      const { itemDetails } = response.data;
+      toast.info(
+          `Donor: ${itemDetails.donor_name}
+         Donor Phone: ${itemDetails.donor_phone}
+         Donor Address: ${itemDetails.donor_address}
+         Pickup Location: ${itemDetails.location}
+         Receiver: ${itemDetails.receiver_name}
+         Receiver Phone: ${itemDetails.receiver_phone}
+         Receiver Address: ${itemDetails.receiver_address}`,
+          { autoClose: false }
+      );
+
       fetchAvailableItems(); // Refresh the list of available items
     } catch (error) {
       console.error('Error assigning item:', error);
@@ -90,7 +103,10 @@ function Distribute() {
                         <p className="font-bold text-blue-800 text-lg">{item.title}</p>
                         <p className="text-sm text-gray-700 mt-2">
                           Location: {item.location} <br/>
-                          Item: {item.category_name}
+                          Item: {item.category_name} <br/>
+                          Donor: {item.donor_name} <br/>
+                          Donor Phone: {item.donor_phone} <br/>
+                          Donor Address: {item.donor_address}
                         </p>
                       </div>
                       <button
