@@ -718,6 +718,10 @@ app.post('/api/distribution/assign', (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const getVolunteerIdQuery = `
+        SELECT volunteer_id FROM volunteer WHERE user_id = ?
+    `;
+
     const updateItemQuery = `
         UPDATE donate_items
         SET distributor_id = ?, is_active = 1
@@ -725,7 +729,7 @@ app.post('/api/distribution/assign', (req, res) => {
     `;
 
     const insertReceiveQuery = `
-        INSERT INTO receive (item_id, receiver_id)
+        INSERT INTO receiving_item_table (item_id, receiver_id)
         VALUES (?, ?)
     `;
 
@@ -733,17 +737,15 @@ app.post('/api/distribution/assign', (req, res) => {
         SELECT 
             di.title, 
             di.location,
-            donor.name AS donor_name,
-            donor.telephone_number AS donor_phone,
-            donor_address.user_address AS donor_address,
-            receiver.name AS receiver_name,
-            receiver.telephone_number AS receiver_phone,
-            receiver_address.user_address AS receiver_address
+            d.doner_id,
+            v.volunteer_id,
+            da.user_address AS donor_address,
+            va.user_address AS volunteer_address
         FROM donate_items di
-        JOIN user donor ON di.user_id = donor.id
-        LEFT JOIN user_address donor_address ON donor.id = donor_address.user_id
-        JOIN user receiver ON receiver.id = ?
-        LEFT JOIN user_address receiver_address ON receiver.id = receiver_address.user_id
+        JOIN doner d ON di.user_id = d.user_id
+        JOIN volunteer v ON v.user_id = ?
+        LEFT JOIN user_address da ON d.address_id = da.id
+        LEFT JOIN user_address va ON v.address_id = va.id
         WHERE di.id = ?
     `;
 
@@ -753,49 +755,67 @@ app.post('/api/distribution/assign', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // Update the donate_items table
-        aid_nexus.query(updateItemQuery, [userId, itemId], (err, result) => {
+        // Get volunteer_id
+        aid_nexus.query(getVolunteerIdQuery, [userId], (err, volunteerResult) => {
             if (err) {
-                console.error('Error updating item:', err);
+                console.error('Error getting volunteer_id:', err);
                 return aid_nexus.rollback(() => {
                     res.status(500).json({ error: 'Database error' });
                 });
             }
 
-            if (result.affectedRows === 0) {
+            if (volunteerResult.length === 0) {
                 return aid_nexus.rollback(() => {
-                    res.status(400).json({ error: 'Item not available for pickup' });
+                    res.status(404).json({ error: 'Volunteer not found' });
                 });
             }
 
-            // Insert into receive table
-            aid_nexus.query(insertReceiveQuery, [itemId, userId], (err, insertResult) => {
+            const volunteerId = volunteerResult[0].volunteer_id;
+
+            // Update the donate_items table
+            aid_nexus.query(updateItemQuery, [volunteerId, itemId], (err, result) => {
                 if (err) {
-                    console.error('Error inserting into receive table:', err);
+                    console.error('Error updating item:', err);
                     return aid_nexus.rollback(() => {
                         res.status(500).json({ error: 'Database error' });
                     });
                 }
 
-                // Get the updated item details
-                aid_nexus.query(getItemDetailsQuery, [userId, itemId], (err, itemDetails) => {
+                if (result.affectedRows === 0) {
+                    return aid_nexus.rollback(() => {
+                        res.status(400).json({ error: 'Item not available for pickup' });
+                    });
+                }
+
+                // Insert into receiving_item_table
+                aid_nexus.query(insertReceiveQuery, [itemId, volunteerId], (err, insertResult) => {
                     if (err) {
-                        console.error('Error getting item details:', err);
+                        console.error('Error inserting into receiving_item_table:', err);
                         return aid_nexus.rollback(() => {
                             res.status(500).json({ error: 'Database error' });
                         });
                     }
 
-                    aid_nexus.commit((err) => {
+                    // Get the updated item details
+                    aid_nexus.query(getItemDetailsQuery, [userId, itemId], (err, itemDetails) => {
                         if (err) {
-                            console.error('Error committing transaction:', err);
+                            console.error('Error getting item details:', err);
                             return aid_nexus.rollback(() => {
                                 res.status(500).json({ error: 'Database error' });
                             });
                         }
-                        res.json({
-                            message: 'Item assigned successfully',
-                            itemDetails: itemDetails[0]
+
+                        aid_nexus.commit((err) => {
+                            if (err) {
+                                console.error('Error committing transaction:', err);
+                                return aid_nexus.rollback(() => {
+                                    res.status(500).json({ error: 'Database error' });
+                                });
+                            }
+                            res.json({
+                                message: 'Item assigned successfully',
+                                itemDetails: itemDetails[0]
+                            });
                         });
                     });
                 });
